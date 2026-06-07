@@ -1,39 +1,35 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { adminNavItems } from "@/lib/query/navItems";
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = (menuName: string) => {
-    setOpenMenus((prev) => ({
-      ...prev,
-      [menuName]: !prev[menuName],
-    }));
+    setOpenMenu((prev) => (prev === menuName ? null : menuName));
   };
 
   useEffect(() => {
-    adminNavItems.forEach((item) => {
-      if (item.subItems) {
-        const isChildActive = item.subItems.some((sub) =>
-          pathname.startsWith(sub.href || ""),
-        );
+    const activeMenu = adminNavItems.find((item) => {
+      if (!item.subItems) return false;
 
-        if (isChildActive) {
-          setOpenMenus((prev) => ({
-            ...prev,
-            [item.name]: true,
-          }));
-        }
-      }
+      return item.subItems.some((sub) => pathname.startsWith(sub.href || ""));
     });
+
+    if (activeMenu) {
+      setOpenMenu(activeMenu.name);
+    } else {
+      setOpenMenu(null);
+    }
   }, [pathname]);
 
   const handleLogout = () => {
@@ -48,7 +44,10 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-72 h-screen bg-[#050505] border-r border-[#050505] p-5 flex flex-col">
+    <aside
+      ref={sidebarRef}
+      className="w-72 h-screen bg-[#050505] border-r border-[#050505] p-5 flex flex-col"
+    >
       {/* LOGO */}
       <div className="pt-10 pb-12 flex justify-center">
         <Link href="/" className="group relative">
@@ -65,7 +64,7 @@ export default function Sidebar() {
       </div>
 
       {/* NAVIGATION */}
-      <nav className="bg-[#0d0d0d] border border-white/5 rounded-4xl px-3 py-4 flex flex-col justify-between shadow-[0_0_40px_rgba(0,0,0,0.45)]">
+      <nav className="bg-[#050505] px-3 py-4 flex flex-col justify-between shadow-[0_0_40px_rgba(0,0,0,0.45)]">
         {/* MENU */}
         <div className="flex flex-col gap-1">
           {adminNavItems.map((item) => {
@@ -75,7 +74,7 @@ export default function Sidebar() {
               ? item.subItems!.some((sub) => pathname === sub.href)
               : pathname === item.href;
 
-            const isOpen = openMenus[item.name];
+            const isOpen = openMenu === item.name;
 
             return (
               <div key={item.name}>

@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
+import axiosInstance from "@/lib/api/axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -10,12 +12,30 @@ import { CartIcon } from "@/components/icons/CartIcon";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
+  const [cartCount, setCartCount] = useState(0);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
 
   const pathname = usePathname();
   const isHome = pathname === "/";
+
+  const fetchCartCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      const res = await axiosInstance.get("/cart");
+
+      const items =
+        res.data?.data?.cartItems ?? res.data?.data?.cart_items ?? [];
+
+      setCartCount(items.length);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,9 +46,10 @@ export default function Navbar() {
     const name = localStorage.getItem("name");
 
     if (token && name) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoggedIn(true);
       setUserName(name);
+
+      fetchCartCount();
     }
 
     window.addEventListener("scroll", handleScroll);
@@ -122,9 +143,11 @@ export default function Navbar() {
                   <div className="p-2 relative flex items-center justify-center transition-transform group-hover:scale-110">
                     <CartIcon className="w-5 h-5 text-white/70 group-hover:text-green-500 transition-colors duration-300" />
 
-                    <span className="absolute top-0.5 right-0 bg-green-600 text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-black">
-                      0
-                    </span>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-green-600 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-black shadow-lg">
+                        {cartCount}
+                      </span>
+                    )}
                   </div>
                 </Link>
 

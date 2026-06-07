@@ -1,294 +1,237 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  CreditCard,
-  MapPin,
-  Phone,
-  User,
-  CalendarDays,
-  Wallet,
-  ArrowRight,
-  ShieldCheck,
-} from "lucide-react";
+import Navbar from "@/components/layout/navbar";
+import { getCart } from "@/lib/query/carts";
+import { CartItem } from "@/lib/query/carts.model";
+import { useEffect, useState } from "react";
+import { ShieldCheck, ArrowRight, ShoppingBag } from "lucide-react";
+import axiosInstance from "@/lib/api/axios";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const cart = await getCart();
+        setCartItems(cart.cart_items ?? []);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, []);
+
+  const subtotal = cartItems.reduce(
+    (total, item) => total + Number(item.subtotal),
+    0,
+  );
+
+  const totalItems = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  );
+
+  const handleCheckout = async () => {
+    try {
+      const res = await axiosInstance.post("/checkout");
+
+      window.snap.pay(res.data.snap_token, {
+        onSuccess: () => {
+          window.location.href = "/success";
+        },
+        onPending: () => {
+          window.location.href = "/success?status=pending";
+        },
+        onError: () => {
+          window.location.href = "/failed";
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10">
-      {/* HEADER */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-black text-gray-900">
-          Checkout Reservasi
-        </h1>
+    <main
+      className="min-h-screen pt-28 pb-24"
+      style={{ background: "#0a0a0a", color: "#fff" }}
+    >
+      {/* AMBIENT */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 40% at 15% 0%, rgba(74,222,128,0.05) 0%, transparent 60%), radial-gradient(ellipse 50% 30% at 85% 100%, rgba(74,222,128,0.04) 0%, transparent 60%)",
+        }}
+      />
 
-        <p className="text-gray-500 mt-2">
-          Lengkapi data penyewaan dan pembayaran
-        </p>
-      </div>
+      <Navbar />
 
-      <div className="grid xl:grid-cols-3 gap-8">
-        {/* LEFT */}
-        <div className="xl:col-span-2 space-y-7">
-          {/* CUSTOMER INFO */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[2rem] border border-gray-100 p-7 shadow-sm"
+      <div className="relative z-10 max-w-7xl mx-auto px-5">
+        {/* HEADER */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
+        >
+          <p
+            className="text-[10px] font-bold uppercase tracking-[0.4em]"
+            style={{ color: "#4ade80" }}
           >
-            <div className="flex items-center gap-4 mb-7">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                <User className="text-emerald-600" />
-              </div>
+            Checkout
+          </p>
 
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">
-                  Informasi Penyewa
-                </h2>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Data customer untuk reservasi
-                </p>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-5">
-              <div>
-                <label className="text-sm font-bold text-gray-700 block mb-2">
-                  Nama Lengkap
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Masukkan nama lengkap"
-                  className="w-full h-14 rounded-2xl border border-gray-200 px-5 outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-gray-700 block mb-2">
-                  Nomor HP
-                </label>
-
-                <div className="relative">
-                  <Phone
-                    size={18}
-                    className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="08xxxxxxxxxx"
-                    className="w-full h-14 rounded-2xl border border-gray-200 pl-14 pr-5 outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="text-sm font-bold text-gray-700 block mb-2">
-                  Alamat
-                </label>
-
-                <div className="relative">
-                  <MapPin
-                    size={18}
-                    className="absolute left-5 top-5 text-gray-400"
-                  />
-
-                  <textarea
-                    rows={4}
-                    placeholder="Masukkan alamat lengkap"
-                    className="w-full rounded-2xl border border-gray-200 pl-14 pr-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* RENTAL DATE */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-[2rem] border border-gray-100 p-7 shadow-sm"
+          <h1
+            className="font-black uppercase italic"
+            style={{ fontSize: "clamp(3rem, 6vw, 5rem)" }}
           >
-            <div className="flex items-center gap-4 mb-7">
-              <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
-                <CalendarDays className="text-blue-600" />
-              </div>
+            Confirm
+            <br />
+            <span
+              style={{
+                WebkitTextStroke: "1px rgba(255,255,255,0.2)",
+                color: "transparent",
+              }}
+            >
+              Order
+            </span>
+          </h1>
 
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">
-                  Tanggal Rental
-                </h2>
+          <p style={{ color: "rgba(255,255,255,0.35)" }}>
+            Review items sebelum pembayaran
+          </p>
+        </motion.div>
 
-                <p className="text-sm text-gray-500 mt-1">
-                  Tentukan jadwal peminjaman
-                </p>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-5">
-              <div>
-                <label className="text-sm font-bold text-gray-700 block mb-2">
-                  Tanggal Pinjam
-                </label>
-
-                <input
-                  type="date"
-                  className="w-full h-14 rounded-2xl border border-gray-200 px-5 outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-gray-700 block mb-2">
-                  Tanggal Kembali
-                </label>
-
-                <input
-                  type="date"
-                  className="w-full h-14 rounded-2xl border border-gray-200 px-5 outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* PAYMENT */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-[2rem] border border-gray-100 p-7 shadow-sm"
-          >
-            <div className="flex items-center gap-4 mb-7">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-50 flex items-center justify-center">
-                <Wallet className="text-yellow-500" />
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">
-                  Metode Pembayaran
-                </h2>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Pilih metode pembayaran reservasi
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {["Transfer Bank", "E-Wallet", "Cash On Store"].map(
-                (method, i) => (
-                  <label
-                    key={i}
-                    className="flex items-center justify-between border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-emerald-500 transition-all"
+        {loading ? (
+          <div
+            className="rounded-2xl animate-pulse"
+            style={{ height: 300, background: "rgba(255,255,255,0.04)" }}
+          />
+        ) : cartItems.length === 0 ? (
+          <div className="text-center py-28">
+            <ShoppingBag size={40} style={{ color: "rgba(255,255,255,0.2)" }} />
+            <h2 className="mt-4 text-xl font-bold text-white/60">
+              Keranjang kosong
+            </h2>
+            <button
+              onClick={() => router.push("/product")}
+              className="mt-6 px-6 py-3 rounded-xl font-bold uppercase tracking-wider"
+              style={{
+                background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                color: "#000",
+              }}
+            >
+              Belanja dulu
+            </button>
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* LEFT */}
+            <div className="lg:col-span-2 space-y-4">
+              <AnimatePresence>
+                {cartItems.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="rounded-2xl p-5"
+                    style={{
+                      background: "#111",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                    }}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
-                        <CreditCard size={20} />
+                    <div className="flex gap-4">
+                      <img
+                        src={item.product.image_url}
+                        className="w-24 h-24 object-cover rounded-xl"
+                      />
+
+                      <div className="flex-1">
+                        <p className="text-xs text-green-400 uppercase tracking-widest">
+                          {item.product.category?.name}
+                        </p>
+
+                        <h3 className="font-bold text-lg">
+                          {item.product.name}
+                        </h3>
+
+                        <p className="text-xs text-white/40">
+                          Qty {item.quantity} • {item.duration} hari
+                        </p>
                       </div>
 
-                      <div>
-                        <h3 className="font-bold text-gray-900">{method}</h3>
-
-                        <p className="text-sm text-gray-500">
-                          Pembayaran aman & cepat
+                      <div className="text-right">
+                        <p className="text-xs text-white/40">Subtotal</p>
+                        <p className="font-bold text-green-400">
+                          Rp {Number(item.subtotal).toLocaleString("id-ID")}
                         </p>
                       </div>
                     </div>
-
-                    <input
-                      type="radio"
-                      name="payment"
-                      className="w-5 h-5 accent-emerald-600"
-                    />
-                  </label>
-                ),
-              )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-          </motion.div>
-        </div>
 
-        {/* RIGHT */}
-        <div>
-          <div className="bg-white rounded-[2rem] border border-gray-100 p-7 shadow-sm sticky top-6">
-            <h2 className="text-2xl font-black text-gray-900 mb-7">
-              Ringkasan Pesanan
-            </h2>
+            {/* RIGHT */}
+            <div
+              className="lg:sticky lg:top-28 rounded-2xl p-6"
+              style={{
+                background: "#111",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <h2 className="font-bold uppercase tracking-widest text-sm mb-6 text-white/70">
+                Ringkasan
+              </h2>
 
-            <div className="space-y-5">
-              {/* ITEM */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold text-gray-900">Tenda Consina 4P</h3>
-
-                  <p className="text-sm text-gray-500 mt-1">1 Item × 3 Hari</p>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-white/60">
+                  <span>Items</span>
+                  <span>{totalItems}</span>
                 </div>
 
-                <span className="font-bold text-gray-900">Rp255.000</span>
-              </div>
-
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold text-gray-900">Carrier Eiger 60L</h3>
-
-                  <p className="text-sm text-gray-500 mt-1">2 Item × 2 Hari</p>
-                </div>
-
-                <span className="font-bold text-gray-900">Rp180.000</span>
-              </div>
-
-              {/* TOTAL */}
-              <div className="border-t border-dashed border-gray-200 pt-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Subtotal</span>
-
-                  <span className="font-bold text-gray-900">Rp435.000</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Biaya Admin</span>
-
-                  <span className="font-bold text-gray-900">Rp5.000</span>
-                </div>
-
-                <div className="border-t border-dashed border-gray-200 pt-5 flex items-center justify-between">
-                  <span className="text-lg font-bold text-gray-900">Total</span>
-
-                  <span className="text-3xl font-black text-emerald-600">
-                    Rp440K
-                  </span>
+                <div className="flex justify-between text-white/60">
+                  <span>Subtotal</span>
+                  <span>Rp {subtotal.toLocaleString("id-ID")}</span>
                 </div>
               </div>
 
-              {/* SECURITY */}
-              <div className="bg-emerald-50 rounded-2xl p-5 flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <ShieldCheck className="text-emerald-600" />
-                </div>
-
-                <div>
-                  <h3 className="font-bold text-emerald-700">Reservasi Aman</h3>
-
-                  <p className="text-sm text-emerald-600 mt-1 leading-relaxed">
-                    Data reservasi dan pembayaran dilindungi sistem keamanan.
-                  </p>
-                </div>
+              <div className="border-t border-white/10 my-5 pt-4 flex justify-between">
+                <span className="uppercase text-white/50 text-xs">Total</span>
+                <span className="text-green-400 font-black text-xl">
+                  Rp {subtotal.toLocaleString("id-ID")}
+                </span>
               </div>
 
-              {/* BUTTON */}
-              <button className="w-full h-14 rounded-2xl bg-emerald-600 text-white font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-                Bayar Sekarang
-                <ArrowRight size={18} />
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 mb-5">
+                <ShieldCheck className="text-green-400" />
+                <p className="text-xs text-white/50">
+                  Pembayaran aman via Midtrans
+                </p>
+              </div>
+
+              <button
+                onClick={handleCheckout}
+                className="w-full h-12 rounded-xl font-bold uppercase tracking-widest"
+                style={{
+                  background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                  color: "#000",
+                }}
+              >
+                Pay Now <ArrowRight className="inline ml-2" size={16} />
               </button>
-
-              <p className="text-xs text-gray-400 text-center leading-relaxed">
-                Dengan melanjutkan checkout, Anda menyetujui syarat dan
-                ketentuan rental.
-              </p>
             </div>
           </div>
-        </div>
+        )}
       </div>
-    </div>
+    </main>
   );
 }

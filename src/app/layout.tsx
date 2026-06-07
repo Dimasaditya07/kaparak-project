@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import {
-  Geist,
-  Geist_Mono,
-  Cormorant_Garamond,
-  Inter,
-} from "next/font/google";
+import { Geist, Geist_Mono, Cormorant_Garamond, Inter } from "next/font/google";
+import Script from "next/script";
 
 import "./globals.css";
 
@@ -69,6 +65,12 @@ export default function RootLayout({
         `}
       >
         {children}
+
+        <Script
+          src="https://app.sandbox.midtrans.com/snap/snap.js"
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

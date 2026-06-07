@@ -1,6 +1,7 @@
 export interface ProductItem {
   id: number;
 
+
   category_id: number;
 
   category?: {
@@ -11,19 +12,13 @@ export interface ProductItem {
 
   name: string;
   slug: string;
-
   code: string;
-
   description: string;
-
   stock: number;
-
   price: number;
-
   image: string | null;
-
+  image_url: string | null;
   status: string;
-
   created_at: string;
   updated_at: string;
 }

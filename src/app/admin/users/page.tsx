@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Users,
-  Search,
-  Edit,
-  Trash2,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
+import { Users, Search, Edit, Trash2, Mail, ShieldCheck } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
@@ -56,13 +49,6 @@ export default function UserManagementPage() {
               Kelola seluruh pengguna website rental outdoor
             </p>
           </div>
-
-          <div className="bg-black text-white px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-sm">
-            <Users size={18} />
-            <span className="text-sm font-medium">
-              Total User {users.length}
-            </span>
-          </div>
         </div>
 
         {/* TABLE */}
@@ -80,7 +66,7 @@ export default function UserManagementPage() {
             </div>
 
             {/* SEARCH */}
-            <div className="relative w-full sm:w-[280px]">
+            <div className="relative w-full sm:w-70">
               <Search
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -105,13 +91,9 @@ export default function UserManagementPage() {
 
                   <th className="py-4 px-6 font-medium">Role</th>
 
-                  <th className="py-4 px-6 font-medium">
-                    Tanggal Bergabung
-                  </th>
+                  <th className="py-4 px-6 font-medium">Tanggal Bergabung</th>
 
-                  <th className="py-4 px-6 font-medium text-right">
-                    Aksi
-                  </th>
+                  <th className="py-4 px-6 font-medium text-right">Aksi</th>
                 </tr>
               </thead>
 
@@ -119,10 +101,7 @@ export default function UserManagementPage() {
                 {/* LOADING */}
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
-                    <tr
-                      key={i}
-                      className="animate-pulse"
-                    >
+                    <tr key={i} className="animate-pulse">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-slate-200"></div>
@@ -155,16 +134,9 @@ export default function UserManagementPage() {
                 ) : users.length === 0 ? (
                   // EMPTY
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-16 text-center"
-                    >
+                    <td colSpan={5} className="py-16 text-center">
                       <div className="flex flex-col items-center justify-center text-slate-400">
-                        <Users
-                          size={48}
-                          strokeWidth={1}
-                          className="mb-4"
-                        />
+                        <Users size={48} strokeWidth={1} className="mb-4" />
 
                         <p className="text-slate-600 font-medium">
                           Belum ada user
@@ -231,10 +203,7 @@ export default function UserManagementPage() {
                               : "bg-emerald-50 text-emerald-700 border-emerald-200"
                           }`}
                         >
-                          <ShieldCheck
-                            size={12}
-                            className="mr-1"
-                          />
+                          <ShieldCheck size={12} className="mr-1" />
 
                           {item.role}
                         </span>
@@ -243,13 +212,14 @@ export default function UserManagementPage() {
                       {/* CREATED */}
                       <td className="py-4 px-6">
                         <span className="text-sm text-slate-600">
-                          {new Date(
-                            item.created_at
-                          ).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {new Date(item.created_at).toLocaleDateString(
+                            "id-ID",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )}
                         </span>
                       </td>
 

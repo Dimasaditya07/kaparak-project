@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import axios from "axios";
@@ -5,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   Package,
   Plus,
-  Image as ImageIcon,
   Edit,
   Trash2,
   X,
@@ -118,7 +118,7 @@ export default function ProductPage() {
 
       formData.append("price", price.toString());
 
-      if (image) {
+      if (image instanceof Blob) {
         formData.append("image", image);
       }
 
@@ -337,7 +337,11 @@ export default function ProductPage() {
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                            <ImageIcon className="text-slate-400" size={20} />
+                            <img
+                              src={item.image_url ?? ""}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
 
                           <div>

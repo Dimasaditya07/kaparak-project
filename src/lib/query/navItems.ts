@@ -5,7 +5,6 @@ import InventoryIcon from "@/components/icons/InventoryIcon";
 import ReservationIcon from "@/components/icons/ReservationIcon";
 import { UserIcon } from "@/components/icons/UserIcon";
 import ReportsIcon from "@/components/icons/ReportsIcon";
-import SettingsIcon from "@/components/icons/SettingsIcon";
 
 export const adminNavItems: AdminNavItem[] = [
   {
@@ -25,16 +24,21 @@ export const adminNavItems: AdminNavItem[] = [
         name: "Product",
         href: "/admin/inventory/product",
       },
-      {
-        name: "Paket",
-        href: "/admin/inventory/bundling",
-      },
     ],
   },
   {
-    name: "Reservations",
-    href: "/admin/reservations",
+    name: "Orders",
     Icon: ReservationIcon,
+    subItems: [
+      {
+        name: "Reservations",
+        href: "/admin/orders/reservations",
+      },
+      {
+        name: "Payments",
+        href: "/admin/orders/payments",
+      }
+    ]
   },
   {
     name: "Users",
