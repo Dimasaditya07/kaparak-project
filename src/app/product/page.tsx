@@ -712,11 +712,7 @@ export default function Product() {
           >
             <AnimatePresence mode="popLayout">
               {filtered.map((product) => (
-                <motion.div
-                  key={product.id}
-                  layout
-                  exit="exit"
-                >
+                <motion.div key={product.id} layout exit="exit">
                   <Link href={`/product/${product.id}`}>
                     <motion.div
                       whileHover={{ y: -5 }}

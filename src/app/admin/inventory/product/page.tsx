@@ -3,13 +3,7 @@
 
 import axios from "axios";
 import { motion } from "framer-motion";
-import {
-  Package,
-  Plus,
-  Edit,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Package, Plus, Edit, Trash2, X } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
@@ -301,17 +295,13 @@ export default function ProductPage() {
                 ) : products.length === 0 ? (
                   // EMPTY
                   <tr>
-                    <td colSpan={5} className="py-16 text-center">
-                      <div className="flex flex-col items-center justify-center text-slate-400">
-                        <Package size={48} strokeWidth={1} className="mb-4" />
-
-                        <p className="text-slate-600 font-medium">
-                          Belum ada produk
-                        </p>
-
-                        <p className="text-sm">
-                          Silakan tambahkan produk baru untuk memulai.
-                        </p>
+                    <td colSpan={6} className="py-16">
+                      <div className="flex flex-col items-center justify-center">
+                        <img
+                          src="/images/empty.png"
+                          alt="Belum ada produk"
+                          className="w-72 md:w-96 object-contain"
+                        />
                       </div>
                     </td>
                   </tr>

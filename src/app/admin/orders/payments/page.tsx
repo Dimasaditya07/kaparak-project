@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -211,11 +212,14 @@ export default function PaymentsPage() {
                   ))
                 ) : paginatedPayments.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="py-16 text-center text-slate-400"
-                    >
-                      No payments found
+                    <td colSpan={6} className="py-16">
+                      <div className="flex flex-col items-center justify-center">
+                        <img
+                          src="/images/empty.png"
+                          alt="Belum ada produk"
+                          className="w-72 md:w-96 object-contain"
+                        />
+                      </div>
                     </td>
                   </tr>
                 ) : (

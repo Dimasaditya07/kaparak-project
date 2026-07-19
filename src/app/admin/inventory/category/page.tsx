@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -217,21 +218,13 @@ export default function CategoryPage() {
                 ) : categories.length === 0 ? (
                   // EMPTY
                   <tr>
-                    <td colSpan={3} className="py-16 text-center">
-                      <div className="flex flex-col items-center justify-center text-slate-400">
-                        <FolderTree
-                          size={48}
-                          strokeWidth={1}
-                          className="mb-4"
+                    <td colSpan={6} className="py-16">
+                      <div className="flex flex-col items-center justify-center">
+                        <img
+                          src="/images/empty.png"
+                          alt="Belum ada produk"
+                          className="w-72 md:w-96 object-contain"
                         />
-
-                        <p className="text-slate-600 font-medium">
-                          Belum ada category
-                        </p>
-
-                        <p className="text-sm">
-                          Silakan tambahkan category baru untuk memulai.
-                        </p>
                       </div>
                     </td>
                   </tr>
