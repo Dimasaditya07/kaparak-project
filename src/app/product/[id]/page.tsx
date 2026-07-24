@@ -38,10 +38,13 @@ export default function ProductDetailPage() {
 
   const duration = useMemo(() => {
     if (!startDate || !endDate) return 0;
+
     const start = new Date(startDate);
     const end = new Date(endDate);
+
     const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-    return diff >= 0 ? diff + 1 : 0;
+
+    return diff > 0 ? diff : 0;
   }, [startDate, endDate]);
 
   const subtotal = useMemo(() => {
@@ -203,7 +206,7 @@ export default function ProductDetailPage() {
           </span>
           <span style={{ color: "rgba(255,255,255,0.15)" }}>/</span>
           <span
-            className="text-xs uppercase tracking-[0.25em] truncate max-w-[180px]"
+            className="text-xs uppercase tracking-[0.25em] truncate max-w-45"
             style={{ color: "rgba(255,255,255,0.45)" }}
           >
             {product.name}
@@ -374,7 +377,7 @@ export default function ProductDetailPage() {
                     className="text-sm"
                     style={{ color: "rgba(255,255,255,0.35)" }}
                   >
-                    /hari
+                    /Malam
                   </span>
                 </div>
               </div>
@@ -515,7 +518,7 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 shrink-0"
                       style={{
                         background: "rgba(255,255,255,0.05)",
                         border: "1px solid rgba(255,255,255,0.1)",
@@ -563,7 +566,7 @@ export default function ProductDetailPage() {
                         setQuantity(Math.min(product.stock, quantity + 1))
                       }
                       disabled={quantity >= product.stock}
-                      className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 disabled:opacity-30"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 shrink-0 disabled:opacity-30"
                       style={{
                         background: "rgba(255,255,255,0.05)",
                         border: "1px solid rgba(255,255,255,0.1)",
@@ -607,12 +610,12 @@ export default function ProductDetailPage() {
               >
                 {[
                   {
-                    label: "Harga per hari",
+                    label: "Harga per malam",
                     value: `Rp ${Number(product.price).toLocaleString("id-ID")}`,
                   },
                   {
                     label: "Durasi Sewa",
-                    value: duration > 0 ? `${duration} Hari` : "—",
+                    value: duration > 0 ? `${duration} Malam` : "—",
                   },
                   { label: "Jumlah Unit", value: `${quantity}x` },
                 ].map((row) => (

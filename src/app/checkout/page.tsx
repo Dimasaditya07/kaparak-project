@@ -1,12 +1,12 @@
+/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Navbar from "@/components/layout/navbar";
-import { getCart } from "@/lib/query/carts";
+import { getCheckoutSummary, checkout } from "@/lib/query/checkout";
 import { CartItem } from "@/lib/query/carts.model";
 import { useEffect, useState } from "react";
 import { ShieldCheck, ArrowRight, ShoppingBag } from "lucide-react";
-import axiosInstance from "@/lib/api/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
@@ -14,24 +14,34 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [discount, setDiscount] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
+  const [eligibleDiscount, setEligibleDiscount] = useState(false);
 
   useEffect(() => {
-    const fetchCart = async () => {
+    const fetchCheckout = async () => {
       try {
-        const cart = await getCart();
-        setCartItems(cart.cart_items ?? []);
+        const data = await getCheckoutSummary();
+
+        setCartItems(data.cart_items);
+        setDiscount(data.discount);
+        setGrandTotal(data.grand_total);
+        setEligibleDiscount(data.eligible_discount);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCart();
+    fetchCheckout();
   }, []);
 
   const subtotal = cartItems.reduce(
     (total, item) => total + Number(item.subtotal),
     0,
   );
+  useEffect(() => {
+    setGrandTotal(subtotal);
+  }, [subtotal]);
 
   const totalItems = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -40,9 +50,9 @@ export default function CheckoutPage() {
 
   const handleCheckout = async () => {
     try {
-      const res = await axiosInstance.post("/checkout");
+      const res = await checkout();
 
-      window.snap.pay(res.data.snap_token, {
+      window.snap.pay(res.snap_token, {
         onSuccess: () => {
           window.location.href = "/success";
         },
@@ -202,12 +212,31 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span>Rp {subtotal.toLocaleString("id-ID")}</span>
                 </div>
+
+                {eligibleDiscount && discount > 0 && (
+                  <>
+                    <div className="flex justify-between text-green-400">
+                      <span>Diskon Loyalitas (10%)</span>
+                      <span>- Rp {discount.toLocaleString("id-ID")}</span>
+                    </div>
+
+                    <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-3">
+                      <p className="text-xs text-green-300">
+                        Selamat! kamu mendapatkan diskon 10% Karena Anda telah
+                        melakukan 3x penyewaan di KAPARAK OUTDOOR, pembelian
+                        ke-4 dan seterusnya dengan total di atas Rp150.000 kamu
+                        mendapatkan diskon 10%.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="border-t border-white/10 my-5 pt-4 flex justify-between">
                 <span className="uppercase text-white/50 text-xs">Total</span>
+
                 <span className="text-green-400 font-black text-xl">
-                  Rp {subtotal.toLocaleString("id-ID")}
+                  Rp {grandTotal.toLocaleString("id-ID")}
                 </span>
               </div>
 

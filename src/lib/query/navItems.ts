@@ -17,6 +17,10 @@ export const adminNavItems: AdminNavItem[] = [
     Icon: InventoryIcon,
     subItems: [
       {
+        name: "Paket",
+        href: "/admin/inventory/package",
+      },
+      {
         name: "Category",
         href: "/admin/inventory/category",
       },
