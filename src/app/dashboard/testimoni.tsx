@@ -29,7 +29,7 @@ const testimonials = [
 
 export default function Testimoni() {
   return (
-    <section className="py-24 px-10 bg-white text-black relative overflow-hidden">
+    <section className="py-24 px-10 bg-black text-white relative overflow-hidden">
       {/* DEKORASI BACKGROUND (BLURRY DOTS) */}
       <div className="absolute top-1/2 left-0 w-64 h-64 bg-green-900/20 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 blur-[150px] rounded-full"></div>
@@ -59,7 +59,7 @@ export default function Testimoni() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.2 }}
               viewport={{ once: true }}
-              className="relative p-8 border border-black/10 bg-white/2 backdrop-blur-md hover:border-green-500/30 transition-all duration-500 group"
+              className="relative p-8 border border-white/10 bg-white/2 backdrop-blur-md hover:border-green-500/30 transition-all duration-500 group"
             >
               {/* QUOTE ICON */}
               <div className="text-green-500 mb-6 opacity-50 group-hover:opacity-100 transition-opacity">

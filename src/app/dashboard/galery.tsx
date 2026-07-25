@@ -47,8 +47,8 @@ export default function Galery() {
         priority={false} // Tidak perlu priority karena bukan Hero
       />
 
-      <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-white to-transparent z-10"></div>
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-white to-transparent z-10"></div>
+      <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-black to-transparent z-10"></div>
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-black to-transparent z-10"></div>
 
       {/* 3. CONTENT (Wajib diberi z-20 agar berada di atas background & overlay) */}
       <div className="relative z-20">

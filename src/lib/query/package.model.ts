@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface PackageProduct {
   id: number;
   package_id: number;
@@ -15,6 +16,7 @@ export interface PackageProduct {
 }
 
 export interface PackageItem {
+  package_items: any;
   id: number;
 
   code: string;
@@ -33,7 +35,7 @@ export interface PackageItem {
   created_at: string;
   updated_at: string;
 
-  items: PackageProduct[];
+  packageItems: PackageProduct[];
 }
 
 export interface PackageResponse {

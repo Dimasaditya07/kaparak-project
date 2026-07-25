@@ -25,6 +25,20 @@ export const addToCart = async (payload: {
 };
 
 /**
+ * ADD PACKAGE TO CART
+ */
+export const addPackageToCart = async (payload: {
+  package_id: number;
+  quantity: number;
+  start_date: string;
+  end_date: string;
+}) => {
+  const res = await axiosInstance.post("/cart", payload);
+
+  return res.data;
+};
+
+/**
  * REMOVE CART ITEM
  */
 export const removeCartItem = async (id: number): Promise<void> => {

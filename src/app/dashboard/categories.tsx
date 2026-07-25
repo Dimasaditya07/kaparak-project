@@ -1,19 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bebas_Neue, Inter, JetBrains_Mono } from "next/font/google";
+import { Bebas_Neue } from "next/font/google";
 
 const bebas = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-});
-
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
 });
 
 // Pastikan mengganti path gambar dengan asset yang sesuai di folder public Anda
@@ -35,7 +27,7 @@ export const categories = [
 
 export default function Categories() {
   return (
-    <section className="relative py-24 px-10 bg-white text-black">
+    <section className="relative py-24 px-10 bg-black text-white">
       <div className="absolute top-0 left-0 w-full h-20 bg-linear-to-b from-black via-black/70 to-transparent backdrop-blur-[2px]"></div>
       <div className="max-w-7xl mx-auto text-center">
         <div className="mb-16">
@@ -70,7 +62,7 @@ export default function Categories() {
                 style={{ backgroundImage: `url(${item.img})` }}
               >
                 {/* DARK OVERLAY (Sesuai desain yang gelap di bawah) */}
-                <div className="absolute inset-0 border bg-linear-to-t from-black via-black/20 to-transparent opacity-80"></div>
+                <div className="absolute inset-0 border bg-linear-to-t from-black via-white/20 to-transparent opacity-80"></div>
               </div>
 
               {/* TEXT CONTENT (Diposisikan di bawah seperti desain) */}
