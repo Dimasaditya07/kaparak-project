@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { PackageItem } from "./package.model";
+
 export type CartProduct = {
   category: any;
   id: number;
@@ -8,7 +11,8 @@ export type CartProduct = {
 
 export type CartItem = {
   id: number;
-  product_id: number;
+  product_id: number | null;
+  package_id: number | null;
   quantity: number;
 
   start_date: string;
@@ -18,7 +22,8 @@ export type CartItem = {
   price: number;
   subtotal: number;
 
-  product: CartProduct;
+  product?: CartProduct | null;
+  package?: PackageItem | null;
 };
 
 export type Cart = {

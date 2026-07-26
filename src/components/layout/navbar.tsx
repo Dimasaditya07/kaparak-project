@@ -4,7 +4,7 @@
 import axiosInstance from "@/lib/api/axios";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { UserIcon } from "@/components/icons/UserIcon";
 import { useRouter, usePathname } from "next/navigation";
 import { CartIcon } from "@/components/icons/CartIcon";
@@ -16,6 +16,9 @@ export default function Navbar() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -55,6 +58,23 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
 
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -106,7 +126,7 @@ export default function Navbar() {
             href="/product"
             className="hover:text-white transition-colors relative group"
           >
-            Product
+            Katalog
             <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full"></span>
           </Link>
 
@@ -133,10 +153,43 @@ export default function Navbar() {
             <div className="flex items-center gap-6 animate-in fade-in duration-500">
               {/* USER INFO */}
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2.5 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-sm">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold text-white truncate max-w-30">
-                    {userName}
-                  </span>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="flex items-center gap-2.5 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-sm hover:border-green-500 transition"
+                  >
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold text-white truncate max-w-30">
+                      {userName}
+                    </span>
+
+                    <svg
+                      className={`w-3 h-3 text-white transition-transform ${
+                        showDropdown ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                      <Link
+                        href="/order-history"
+                        onClick={() => setShowDropdown(false)}
+                        className="block px-4 py-3 text-sm text-white hover:bg-green-600 transition"
+                      >
+                        Riwayat Pesanan
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
                 <Link href="/cart" className="relative group">

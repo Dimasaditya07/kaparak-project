@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Search, Eye } from "lucide-react";
 
@@ -9,6 +10,7 @@ import { getReservations } from "@/lib/query/reservations";
 import { Reservation } from "@/lib/query/reservations.model";
 
 export default function ReservationAdminPage() {
+  const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -250,7 +252,12 @@ export default function ReservationAdminPage() {
                       </td>
 
                       <td className="py-4 px-6 text-center">
-                        <button className="p-2 rounded-lg border hover:bg-slate-100">
+                        <button
+                          onClick={() =>
+                            router.push(`/admin/orders/reservations/${r.id}`)
+                          }
+                          className="p-2 rounded-lg border hover:bg-slate-100"
+                        >
                           <Eye size={16} />
                         </button>
                       </td>

@@ -6,9 +6,50 @@ import Navbar from "@/components/layout/navbar";
 import { getCheckoutSummary, checkout } from "@/lib/query/checkout";
 import { CartItem } from "@/lib/query/carts.model";
 import { useEffect, useState } from "react";
-import { ShieldCheck, ArrowRight, ShoppingBag } from "lucide-react";
+import {
+  ShieldCheck,
+  ArrowRight,
+  ShoppingBag,
+  Package as PackageIcon,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+
+// Info tampilan yang seragam, apapun jenis item-nya (produk satuan atau paket)
+// Disamakan dengan helper di cart/page.tsx
+type CartItemDisplay = {
+  type: "product" | "package";
+  name: string;
+  imageUrl: string | null;
+  subLabel: string;
+};
+
+function getCartItemDisplay(item: CartItem): CartItemDisplay {
+  if (item.package) {
+    return {
+      type: "package",
+      name: item.package.name,
+      imageUrl: item.package.image_url ?? null,
+      subLabel: `Paket · ${item.package.packageItems?.length ?? 0} Barang`,
+    };
+  }
+
+  if (item.product) {
+    return {
+      type: "product",
+      name: item.product.name,
+      imageUrl: item.product.image_url ?? null,
+      subLabel: item.product.category?.name || "Outdoor Equipment",
+    };
+  }
+
+  return {
+    type: "product",
+    name: "Item tidak dikenal",
+    imageUrl: null,
+    subLabel: "—",
+  };
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -146,47 +187,63 @@ export default function CheckoutPage() {
             {/* LEFT */}
             <div className="lg:col-span-2 space-y-4">
               <AnimatePresence>
-                {cartItems.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="rounded-2xl p-5"
-                    style={{
-                      background: "#111",
-                      border: "1px solid rgba(255,255,255,0.07)",
-                    }}
-                  >
-                    <div className="flex gap-4">
-                      <img
-                        src={item.product.image_url}
-                        className="w-24 h-24 object-cover rounded-xl"
-                      />
+                {cartItems.map((item) => {
+                  const display = getCartItemDisplay(item);
 
-                      <div className="flex-1">
-                        <p className="text-xs text-green-400 uppercase tracking-widest">
-                          {item.product.category?.name}
-                        </p>
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="rounded-2xl p-5"
+                      style={{
+                        background: "#111",
+                        border: "1px solid rgba(255,255,255,0.07)",
+                      }}
+                    >
+                      <div className="flex gap-4">
+                        {display.imageUrl ? (
+                          <img
+                            src={display.imageUrl}
+                            className="w-24 h-24 object-cover rounded-xl flex-shrink-0"
+                          />
+                        ) : (
+                          <div
+                            className="w-24 h-24 rounded-xl flex-shrink-0 flex items-center justify-center"
+                            style={{
+                              background: "rgba(255,255,255,0.04)",
+                              color: "rgba(255,255,255,0.2)",
+                            }}
+                          >
+                            <PackageIcon size={28} />
+                          </div>
+                        )}
 
-                        <h3 className="font-bold text-lg">
-                          {item.product.name}
-                        </h3>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-green-400 uppercase tracking-widest">
+                            {display.subLabel}
+                          </p>
 
-                        <p className="text-xs text-white/40">
-                          Qty {item.quantity} • {item.duration} hari
-                        </p>
+                          <h3 className="font-bold text-lg truncate">
+                            {display.name}
+                          </h3>
+
+                          <p className="text-xs text-white/40">
+                            Qty {item.quantity} • {item.duration} hari
+                          </p>
+                        </div>
+
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs text-white/40">Subtotal</p>
+                          <p className="font-bold text-green-400">
+                            Rp {Number(item.subtotal).toLocaleString("id-ID")}
+                          </p>
+                        </div>
                       </div>
-
-                      <div className="text-right">
-                        <p className="text-xs text-white/40">Subtotal</p>
-                        <p className="font-bold text-green-400">
-                          Rp {Number(item.subtotal).toLocaleString("id-ID")}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
 

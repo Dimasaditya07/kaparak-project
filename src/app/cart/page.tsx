@@ -5,9 +5,54 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/navbar";
 import axiosInstance from "@/lib/api/axios";
-import { Trash2, ShoppingBag, CalendarDays } from "lucide-react";
+import {
+  Trash2,
+  ShoppingBag,
+  CalendarDays,
+  Package as PackageIcon,
+} from "lucide-react";
 import { CartItem } from "@/lib/query/carts.model";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Info tampilan yang seragam, apapun jenis item-nya (produk satuan atau paket)
+type CartItemDisplay = {
+  type: "product" | "package";
+  name: string;
+  imageUrl: string | null;
+  subLabel: string;
+  unitPrice: number;
+};
+
+function getCartItemDisplay(item: CartItem): CartItemDisplay {
+  if (item.package) {
+    return {
+      type: "package",
+      name: item.package.name,
+      imageUrl: item.package.image_url ?? null,
+      subLabel: `Paket · ${item.package.packageItems?.length ?? 0} Barang`,
+      unitPrice: Number(item.package.package_price),
+    };
+  }
+
+  if (item.product) {
+    return {
+      type: "product",
+      name: item.product.name,
+      imageUrl: item.product.image_url ?? null,
+      subLabel: item.product.category?.name || "Outdoor Equipment",
+      unitPrice: Number(item.product.price),
+    };
+  }
+
+  // Fallback kalau relasi product/package ternyata belum di-load backend
+  return {
+    type: "product",
+    name: "Item tidak dikenal",
+    imageUrl: null,
+    subLabel: "—",
+    unitPrice: 0,
+  };
+}
 
 export default function CartPage() {
   const router = useRouter();
@@ -117,7 +162,7 @@ export default function CartPage() {
           </h1>
 
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Review peralatan rental sebelum melanjutkan pembayaran
+            Review peralatan &amp; paket rental sebelum melanjutkan pembayaran
           </p>
         </motion.div>
 
@@ -167,7 +212,7 @@ export default function CartPage() {
               className="text-sm mb-8"
               style={{ color: "rgba(255,255,255,0.3)" }}
             >
-              Belum ada produk yang ditambahkan ke keranjang
+              Belum ada produk atau paket yang ditambahkan ke keranjang
             </p>
             <button
               onClick={() => router.push("/product")}
@@ -198,204 +243,231 @@ export default function CartPage() {
             {/* CART ITEMS */}
             <div className="lg:col-span-2 space-y-4">
               <AnimatePresence mode="popLayout">
-                {cartItems.map((item, index) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -30, scale: 0.97 }}
-                    transition={{ duration: 0.35, delay: index * 0.06 }}
-                    className="overflow-hidden"
-                    style={{
-                      borderRadius: "1.5rem",
-                      background: "#111",
-                      border: "1px solid rgba(255,255,255,0.07)",
-                    }}
-                  >
-                    <div className="flex flex-col sm:flex-row">
-                      {/* IMAGE */}
-                      <div
-                        className="relative w-full sm:w-48 flex-shrink-0 overflow-hidden"
-                        style={{ minHeight: 192 }}
-                      >
-                        <img
-                          src={item.product.image_url}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                          style={{ minHeight: 192 }}
-                        />
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            background:
-                              "linear-gradient(to right, transparent 60%, rgba(17,17,17,0.5) 100%)",
-                          }}
-                        />
-                      </div>
+                {cartItems.map((item, index) => {
+                  const display = getCartItemDisplay(item);
 
-                      {/* CONTENT */}
-                      <div className="flex-1 p-5 sm:p-6 flex flex-col justify-between">
-                        <div className="flex items-start justify-between gap-3 mb-4">
-                          <div>
-                            <p
-                              className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1.5"
-                              style={{ color: "#4ade80" }}
+                  return (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.97 }}
+                      transition={{ duration: 0.35, delay: index * 0.06 }}
+                      className="overflow-hidden"
+                      style={{
+                        borderRadius: "1.5rem",
+                        background: "#111",
+                        border: "1px solid rgba(255,255,255,0.07)",
+                      }}
+                    >
+                      <div className="flex flex-col sm:flex-row">
+                        {/* IMAGE */}
+                        <div
+                          className="relative w-full sm:w-48 flex-shrink-0 overflow-hidden"
+                          style={{ minHeight: 192 }}
+                        >
+                          {display.imageUrl ? (
+                            <img
+                              src={display.imageUrl}
+                              alt={display.name}
+                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                              style={{ minHeight: 192 }}
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center"
+                              style={{
+                                minHeight: 192,
+                                background: "rgba(255,255,255,0.04)",
+                                color: "rgba(255,255,255,0.2)",
+                              }}
                             >
-                              {item.product.category?.name ||
-                                "Outdoor Equipment"}
-                            </p>
-                            <h2
-                              className="text-xl font-black leading-tight"
-                              style={{ color: "#fff" }}
+                              <PackageIcon size={32} />
+                            </div>
+                          )}
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background:
+                                "linear-gradient(to right, transparent 60%, rgba(17,17,17,0.5) 100%)",
+                            }}
+                          />
+                          {display.type === "package" && (
+                            <div
+                              className="absolute top-3 left-3 px-2.5 py-1 rounded-full backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider"
+                              style={{
+                                background: "rgba(74,222,128,0.2)",
+                                border: "1px solid rgba(74,222,128,0.35)",
+                                color: "#4ade80",
+                              }}
                             >
-                              {item.product.name}
-                            </h2>
-                            <p
-                              className="text-xs mt-1"
-                              style={{ color: "rgba(255,255,255,0.35)" }}
+                              Paket
+                            </div>
+                          )}
+                        </div>
+
+                        {/* CONTENT */}
+                        <div className="flex-1 p-5 sm:p-6 flex flex-col justify-between">
+                          <div className="flex items-start justify-between gap-3 mb-4">
+                            <div>
+                              <p
+                                className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1.5"
+                                style={{ color: "#4ade80" }}
+                              >
+                                {display.subLabel}
+                              </p>
+                              <h2
+                                className="text-xl font-black leading-tight"
+                                style={{ color: "#fff" }}
+                              >
+                                {display.name}
+                              </h2>
+                              <p
+                                className="text-xs mt-1"
+                                style={{ color: "rgba(255,255,255,0.35)" }}
+                              >
+                                {item.quantity}{" "}
+                                {display.type === "package" ? "paket" : "unit"}
+                              </p>
+                            </div>
+
+                            {/* DELETE */}
+                            <button
+                              onClick={() => handleRemove(item.id)}
+                              disabled={removingId === item.id}
+                              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-40"
+                              style={{
+                                background: "rgba(239,68,68,0.1)",
+                                border: "1px solid rgba(239,68,68,0.2)",
+                                color: "#f87171",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background =
+                                  "rgba(239,68,68,0.2)";
+                                e.currentTarget.style.borderColor =
+                                  "rgba(239,68,68,0.4)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background =
+                                  "rgba(239,68,68,0.1)";
+                                e.currentTarget.style.borderColor =
+                                  "rgba(239,68,68,0.2)";
+                              }}
                             >
-                              {item.quantity} unit
-                            </p>
+                              {removingId === item.id ? (
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full"
+                                  style={{
+                                    border: "1.5px solid rgba(248,113,113,0.3)",
+                                    borderTop: "1.5px solid #f87171",
+                                    animation: "spin 0.8s linear infinite",
+                                    display: "inline-block",
+                                  }}
+                                />
+                              ) : (
+                                <Trash2 size={15} />
+                              )}
+                            </button>
                           </div>
 
-                          {/* DELETE */}
-                          <button
-                            onClick={() => handleRemove(item.id)}
-                            disabled={removingId === item.id}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-40"
+                          {/* DETAILS GRID */}
+                          <div
+                            className="grid grid-cols-3 gap-3 p-4 rounded-xl mb-4"
                             style={{
-                              background: "rgba(239,68,68,0.1)",
-                              border: "1px solid rgba(239,68,68,0.2)",
-                              color: "#f87171",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(239,68,68,0.2)";
-                              e.currentTarget.style.borderColor =
-                                "rgba(239,68,68,0.4)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(239,68,68,0.1)";
-                              e.currentTarget.style.borderColor =
-                                "rgba(239,68,68,0.2)";
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(255,255,255,0.06)",
                             }}
                           >
-                            {removingId === item.id ? (
-                              <span
-                                className="w-3.5 h-3.5 rounded-full"
+                            <div>
+                              <p
+                                className="text-[10px] uppercase tracking-[0.2em] mb-1"
+                                style={{ color: "rgba(255,255,255,0.3)" }}
+                              >
+                                Durasi
+                              </p>
+                              <p
+                                className="text-sm font-bold"
+                                style={{ color: "rgba(255,255,255,0.8)" }}
+                              >
+                                {item.duration} Hari
+                              </p>
+                            </div>
+                            <div>
+                              <p
+                                className="text-[10px] uppercase tracking-[0.2em] mb-1"
+                                style={{ color: "rgba(255,255,255,0.3)" }}
+                              >
+                                Per Hari
+                              </p>
+                              <p
+                                className="text-sm font-bold"
+                                style={{ color: "rgba(255,255,255,0.8)" }}
+                              >
+                                Rp {display.unitPrice.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                            <div>
+                              <p
+                                className="text-[10px] uppercase tracking-[0.2em] mb-1"
+                                style={{ color: "rgba(255,255,255,0.3)" }}
+                              >
+                                {display.type === "package" ? "Paket" : "Unit"}
+                              </p>
+                              <p
+                                className="text-sm font-bold"
+                                style={{ color: "rgba(255,255,255,0.8)" }}
+                              >
+                                {item.quantity}x
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* DATE + SUBTOTAL */}
+                          <div className="flex items-end justify-between gap-4">
+                            <div
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                              style={{
+                                background: "rgba(255,255,255,0.04)",
+                                border: "1px solid rgba(255,255,255,0.07)",
+                              }}
+                            >
+                              <CalendarDays
+                                size={13}
                                 style={{
-                                  border: "1.5px solid rgba(248,113,113,0.3)",
-                                  borderTop: "1.5px solid #f87171",
-                                  animation: "spin 0.8s linear infinite",
-                                  display: "inline-block",
+                                  color: "rgba(255,255,255,0.35)",
+                                  flexShrink: 0,
                                 }}
                               />
-                            ) : (
-                              <Trash2 size={15} />
-                            )}
-                          </button>
-                        </div>
+                              <span
+                                className="text-xs"
+                                style={{ color: "rgba(255,255,255,0.45)" }}
+                              >
+                                {item.start_date} — {item.end_date}
+                              </span>
+                            </div>
 
-                        {/* DETAILS GRID */}
-                        <div
-                          className="grid grid-cols-3 gap-3 p-4 rounded-xl mb-4"
-                          style={{
-                            background: "rgba(255,255,255,0.03)",
-                            border: "1px solid rgba(255,255,255,0.06)",
-                          }}
-                        >
-                          <div>
-                            <p
-                              className="text-[10px] uppercase tracking-[0.2em] mb-1"
-                              style={{ color: "rgba(255,255,255,0.3)" }}
-                            >
-                              Durasi
-                            </p>
-                            <p
-                              className="text-sm font-bold"
-                              style={{ color: "rgba(255,255,255,0.8)" }}
-                            >
-                              {item.duration} Hari
-                            </p>
-                          </div>
-                          <div>
-                            <p
-                              className="text-[10px] uppercase tracking-[0.2em] mb-1"
-                              style={{ color: "rgba(255,255,255,0.3)" }}
-                            >
-                              Per Hari
-                            </p>
-                            <p
-                              className="text-sm font-bold"
-                              style={{ color: "rgba(255,255,255,0.8)" }}
-                            >
-                              Rp{" "}
-                              {Number(item.product.price).toLocaleString(
-                                "id-ID",
-                              )}
-                            </p>
-                          </div>
-                          <div>
-                            <p
-                              className="text-[10px] uppercase tracking-[0.2em] mb-1"
-                              style={{ color: "rgba(255,255,255,0.3)" }}
-                            >
-                              Unit
-                            </p>
-                            <p
-                              className="text-sm font-bold"
-                              style={{ color: "rgba(255,255,255,0.8)" }}
-                            >
-                              {item.quantity}x
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* DATE + SUBTOTAL */}
-                        <div className="flex items-end justify-between gap-4">
-                          <div
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-                            style={{
-                              background: "rgba(255,255,255,0.04)",
-                              border: "1px solid rgba(255,255,255,0.07)",
-                            }}
-                          >
-                            <CalendarDays
-                              size={13}
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                flexShrink: 0,
-                              }}
-                            />
-                            <span
-                              className="text-xs"
-                              style={{ color: "rgba(255,255,255,0.45)" }}
-                            >
-                              {item.start_date} — {item.end_date}
-                            </span>
-                          </div>
-
-                          <div className="text-right flex-shrink-0">
-                            <p
-                              className="text-[10px] uppercase tracking-[0.15em] mb-0.5"
-                              style={{ color: "rgba(255,255,255,0.3)" }}
-                            >
-                              Subtotal
-                            </p>
-                            <p
-                              className="text-xl font-black"
-                              style={{ color: "#4ade80" }}
-                            >
-                              Rp {Number(item.subtotal).toLocaleString("id-ID")}
-                            </p>
+                            <div className="text-right flex-shrink-0">
+                              <p
+                                className="text-[10px] uppercase tracking-[0.15em] mb-0.5"
+                                style={{ color: "rgba(255,255,255,0.3)" }}
+                              >
+                                Subtotal
+                              </p>
+                              <p
+                                className="text-xl font-black"
+                                style={{ color: "#4ade80" }}
+                              >
+                                Rp{" "}
+                                {Number(item.subtotal).toLocaleString("id-ID")}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
 
@@ -431,37 +503,50 @@ export default function CartPage() {
 
                 {/* ITEMS LIST */}
                 <div className="space-y-3 mb-6">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between gap-3"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0"
-                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                        >
-                          <img
-                            src={item.product.image_url}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                          />
+                  {cartItems.map((item) => {
+                    const display = getCartItemDisplay(item);
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div
+                            className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
+                            style={{
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              background: "rgba(255,255,255,0.04)",
+                            }}
+                          >
+                            {display.imageUrl ? (
+                              <img
+                                src={display.imageUrl}
+                                alt={display.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <PackageIcon
+                                size={14}
+                                style={{ color: "rgba(255,255,255,0.3)" }}
+                              />
+                            )}
+                          </div>
+                          <span
+                            className="text-xs truncate"
+                            style={{ color: "rgba(255,255,255,0.5)" }}
+                          >
+                            {display.name}
+                          </span>
                         </div>
                         <span
-                          className="text-xs truncate"
-                          style={{ color: "rgba(255,255,255,0.5)" }}
+                          className="text-xs font-semibold flex-shrink-0"
+                          style={{ color: "rgba(255,255,255,0.65)" }}
                         >
-                          {item.product.name}
+                          Rp {Number(item.subtotal).toLocaleString("id-ID")}
                         </span>
                       </div>
-                      <span
-                        className="text-xs font-semibold flex-shrink-0"
-                        style={{ color: "rgba(255,255,255,0.65)" }}
-                      >
-                        Rp {Number(item.subtotal).toLocaleString("id-ID")}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* STATS */}
@@ -475,7 +560,7 @@ export default function CartPage() {
                   {[
                     {
                       label: "Total Item",
-                      value: `${cartItems.length} produk`,
+                      value: `${cartItems.length} item`,
                     },
                     { label: "Total Hari", value: `${totalDays} hari` },
                   ].map((s) => (

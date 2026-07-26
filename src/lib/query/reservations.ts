@@ -1,44 +1,116 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "@/lib/api/axios";
-import { ReservationResponse } from "./reservations.model";
+import { Reservation } from "./reservations.model";
 
-export const getReservations = async () => {
-  const response = await axios.get<ReservationResponse>(
-    "/reservations"
-  );
+/**
+ * Mapping response Laravel -> Frontend Model
+ */
+const mapReservation = (reservation: any): Reservation => ({
+  ...reservation,
 
-  return response.data.data;
+  reservationItems: (reservation.reservation_items ?? []).map((item: any) => ({
+    ...item,
+
+    product: item.product
+      ? {
+          ...item.product,
+        }
+      : null,
+
+    package: item.package
+      ? {
+          ...item.package,
+
+          packageItems: (item.package.package_items ?? []).map(
+            (packageItem: any) => ({
+              ...packageItem,
+
+              product: packageItem.product
+                ? {
+                    ...packageItem.product,
+                  }
+                : null,
+            })
+          ),
+        }
+      : null,
+  })),
+});
+
+/**
+ * GET ALL RESERVATIONS
+ */
+export const getReservations = async (): Promise<Reservation[]> => {
+  const res = await axios.get("/reservations");
+
+  return res.data.data.map(mapReservation);
 };
 
+/**
+ * GET RESERVATION DETAIL
+ */
+export const getReservationDetail = async (
+  id: number
+): Promise<Reservation> => {
+  const res = await axios.get(`/reservations/${id}`);
+
+  return mapReservation(res.data.data);
+};
+
+/**
+ * GET RESERVATION BY ID
+ */
 export const getReservationById = async (
   id: number
-) => {
-  const response = await axios.get(
-    `/reservations/${id}`
-  );
+): Promise<Reservation> => {
+  const res = await axios.get(`/reservations/${id}`);
 
-  return response.data.data;
+  return mapReservation(res.data.data);
 };
 
+/**
+ * UPDATE STATUS
+ */
 export const updateReservationStatus = async (
   id: number,
   status: string
-) => {
-  const response = await axios.patch(
-    `/reservations/${id}/status`,
-    {
-      status,
-    }
-  );
+): Promise<Reservation> => {
+  const res = await axios.patch(`/reservations/${id}/status`, {
+    status,
+  });
 
-  return response.data;
+  return mapReservation(res.data.data);
 };
 
-export const deleteReservation = async (
+/**
+ * PICKUP RESERVATION
+ * confirmed -> picked_up
+ */
+export const pickupReservation = async (
   id: number
-) => {
-  const response = await axios.delete(
-    `/reservations/${id}`
-  );
+): Promise<Reservation> => {
+  const res = await axios.post(`/reservations/${id}/pickup`);
 
-  return response.data;
+  return mapReservation(res.data.data);
+};
+
+/**
+ * CONFIRM RETURN
+ * picked_up -> returned
+ */
+export const confirmReturn = async (
+  id: number
+): Promise<Reservation> => {
+  const res = await axios.post(`/reservations/${id}/confirm-return`);
+
+  return mapReservation(res.data.data);
+};
+
+/**
+ * DELETE RESERVATION
+ */
+export const deleteReservation = async (id: number) => {
+  const res = await axios.delete(`/reservations/${id}`);
+
+  return res.data;
 };
