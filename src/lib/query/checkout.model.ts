@@ -8,3 +8,11 @@ export interface CheckoutSummary {
   eligible_discount: boolean;
   purchase_count: number;
 }
+
+export interface PendingPayment {
+  reservation_id: number;
+  code: string;
+  snap_token: string;
+  total: number;
+  created_at: string;
+}

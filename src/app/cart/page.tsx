@@ -10,9 +10,12 @@ import {
   ShoppingBag,
   CalendarDays,
   Package as PackageIcon,
+  Clock,
 } from "lucide-react";
 import { CartItem } from "@/lib/query/carts.model";
 import { motion, AnimatePresence } from "framer-motion";
+import { getPendingPayment } from "@/lib/query/checkout";
+import { PendingPayment } from "@/lib/query/checkout.model";
 
 // Info tampilan yang seragam, apapun jenis item-nya (produk satuan atau paket)
 type CartItemDisplay = {
@@ -59,6 +62,10 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(
+    null,
+  );
+  const [resuming, setResuming] = useState(false);
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -76,12 +83,43 @@ export default function CartPage() {
     }
   };
 
+  const fetchPendingPayment = async () => {
+    try {
+      const data = await getPendingPayment();
+      setPendingPayment(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleResumePayment = () => {
+    if (!pendingPayment) return;
+    setResuming(true);
+
+    window.snap.pay(pendingPayment.snap_token, {
+      onSuccess: () => {
+        window.location.href = "/success";
+      },
+      onPending: () => {
+        setResuming(false);
+      },
+      onError: () => {
+        setResuming(false);
+      },
+      onClose: () => {
+        setResuming(false);
+      },
+    });
+  };
+
   useEffect(() => {
     if (!token) {
       router.push("/login");
       return;
     }
     fetchCart();
+    fetchPendingPayment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, token]);
 
   const handleRemove = async (id: number) => {
@@ -165,6 +203,59 @@ export default function CartPage() {
             Review peralatan &amp; paket rental sebelum melanjutkan pembayaran
           </p>
         </motion.div>
+
+        {/* PENDING PAYMENT BANNER */}
+        {pendingPayment && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 p-5 rounded-2xl"
+            style={{
+              background: "rgba(251,146,60,0.08)",
+              border: "1px solid rgba(251,146,60,0.25)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: "rgba(251,146,60,0.15)",
+                  border: "1px solid rgba(251,146,60,0.3)",
+                }}
+              >
+                <Clock size={18} style={{ color: "#fb923c" }} />
+              </div>
+              <div>
+                <p
+                  className="text-sm font-bold mb-0.5"
+                  style={{ color: "#fb923c" }}
+                >
+                  Ada Pembayaran Menunggu
+                </p>
+                <p
+                  className="text-xs"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                >
+                  Pesanan {pendingPayment.code} — Rp{" "}
+                  {Number(pendingPayment.total).toLocaleString("id-ID")} belum
+                  diselesaikan.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleResumePayment}
+              disabled={resuming}
+              className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
+              style={{
+                background: "linear-gradient(135deg, #fb923c 0%, #ea580c 100%)",
+                color: "#0a0a0a",
+              }}
+            >
+              {resuming ? "Memuat..." : "Lanjutkan Pembayaran"}
+            </button>
+          </motion.div>
+        )}
 
         {/* LOADING */}
         {loading ? (

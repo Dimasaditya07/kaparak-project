@@ -16,7 +16,6 @@ export interface PackageProduct {
 }
 
 export interface PackageItem {
-  package_items: any;
   id: number;
 
   code: string;

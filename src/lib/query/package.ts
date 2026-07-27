@@ -1,34 +1,64 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import axiosInstance from "../api/axios";
 import {
   PackageResponse,
   PackageDetailResponse,
   CreatePackagePayload,
+  PackageItem,
 } from "./package.model";
+
+/**
+ * Mapping Laravel Response -> Frontend Model
+ */
+const mapPackage = (pkg: any): PackageItem => ({
+  ...pkg,
+
+  packageItems: (pkg.package_items ?? []).map((item: any) => ({
+    ...item,
+
+    product: item.product
+      ? {
+          ...item.product,
+        }
+      : null,
+  })),
+});
 
 /**
  * Get All Packages
  */
-export async function getPackages() {
+export async function getPackages(): Promise<PackageResponse> {
   const res = await axiosInstance.get<PackageResponse>("/packages");
 
-  return res.data;
+  return {
+    ...res.data,
+    data: res.data.data.map(mapPackage),
+  };
 }
 
 /**
  * Get Detail Package
  */
-export async function getPackage(id: number) {
+export async function getPackage(
+  id: number,
+): Promise<PackageDetailResponse> {
   const res = await axiosInstance.get<PackageDetailResponse>(
     `/packages/${id}`,
   );
 
-  return res.data;
+  return {
+    ...res.data,
+    data: mapPackage(res.data.data),
+  };
 }
 
 /**
  * Create Package
  */
-export async function createPackage(data: CreatePackagePayload) {
+export async function createPackage(
+  data: CreatePackagePayload,
+) {
   const formData = new FormData();
 
   formData.append("code", data.code);

@@ -173,8 +173,6 @@ export default function ReservationDetailAdminPage() {
   }
 
   const items = reservation.reservationItems ?? [];
-  // Konfirmasi pengembalian hanya masuk akal kalau barang sudah diambil
-  const canConfirmReturn = reservation.status === "picked_up";
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 lg:p-12">
@@ -278,44 +276,100 @@ export default function ReservationDetailAdminPage() {
                 ) : (
                   items.map((item) => {
                     const display = getItemDisplay(item);
+
                     return (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-4 px-6 py-4"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
-                          {display.imageUrl ? (
-                            <img
-                              src={display.imageUrl}
-                              alt={display.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <PackageIcon size={20} className="text-slate-300" />
+                      <div key={item.id} className="px-6 py-4">
+                        {/* Header Item */}
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
+                            {display.imageUrl ? (
+                              <img
+                                src={display.imageUrl}
+                                alt={display.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <PackageIcon
+                                size={20}
+                                className="text-slate-300"
+                              />
+                            )}
+                          </div>
+
+                          <div className="flex-1">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-1">
+                              {display.subLabel}
+                            </p>
+
+                            <p className="text-sm font-semibold text-slate-800">
+                              {display.name}
+                            </p>
+
+                            <p className="text-xs text-slate-400">
+                              {display.code} · {item.quantity}
+                              {display.type === "package" ? " paket" : " unit"}
+                            </p>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-xs text-slate-400">Subtotal</p>
+
+                            <p className="text-sm font-semibold text-slate-800">
+                              Rp {Number(item.subtotal).toLocaleString("id-ID")}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* ====================== */}
+                        {/* DETAIL ISI PAKET */}
+                        {/* ====================== */}
+
+                        {item.package &&
+                          item.package.packageItems &&
+                          item.package.packageItems.length > 0 && (
+                            <div className="mt-4 ml-18 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <p className="text-xs font-semibold text-slate-700 mb-3">
+                                Barang termasuk dalam paket:
+                              </p>
+
+                              <div className="space-y-3">
+                                {item.package.packageItems.map(
+                                  (packageItem) => (
+                                    <div
+                                      key={packageItem.id}
+                                      className="flex items-center gap-3"
+                                    >
+                                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border flex items-center justify-center">
+                                        {packageItem.product?.image_url ? (
+                                          <img
+                                            src={packageItem.product.image_url}
+                                            alt={packageItem.product.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <PackageIcon
+                                            size={16}
+                                            className="text-slate-400"
+                                          />
+                                        )}
+                                      </div>
+
+                                      <div className="flex-1">
+                                        <p className="text-sm font-medium text-slate-800">
+                                          {packageItem.product?.name}
+                                        </p>
+
+                                        <p className="text-xs text-slate-500">
+                                          {packageItem.product?.code} •{" "}
+                                          {packageItem.quantity} unit
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            </div>
                           )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-0.5">
-                            {display.subLabel}
-                          </p>
-                          <p className="text-sm font-semibold text-slate-800 truncate">
-                            {display.name}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            {display.code} · {item.quantity}
-                            {display.type === "package" ? " paket" : " unit"}
-                          </p>
-                        </div>
-
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-xs text-slate-400 mb-0.5">
-                            Subtotal
-                          </p>
-                          <p className="text-sm font-semibold text-slate-800">
-                            Rp {Number(item.subtotal).toLocaleString("id-ID")}
-                          </p>
-                        </div>
                       </div>
                     );
                   })
@@ -364,7 +418,7 @@ export default function ReservationDetailAdminPage() {
                   <button
                     onClick={handlePickup}
                     disabled={confirming}
-                    className="w-full h-11 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+                    className="w-full h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition disabled:opacity-50"
                   >
                     {confirming ? "Memproses..." : "Tandai Barang Diambil"}
                   </button>
@@ -385,7 +439,7 @@ export default function ReservationDetailAdminPage() {
                   <button
                     onClick={handleConfirmReturn}
                     disabled={confirming}
-                    className="w-full h-11 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition disabled:opacity-50"
+                    className="w-full h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition disabled:opacity-50"
                   >
                     {confirming ? "Memproses..." : "Konfirmasi Pengembalian"}
                   </button>
