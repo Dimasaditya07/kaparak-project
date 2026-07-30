@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "@/lib/api/axios";
-import { Reservation } from "./reservations.model";
+import { ConfirmReturnItemPayload, Reservation } from "./reservations.model";
 
 /**
  * Mapping response Laravel -> Frontend Model
@@ -99,10 +99,12 @@ export const pickupReservation = async (
  * picked_up -> returned
  */
 export const confirmReturn = async (
-  id: number
+  id: number,
+  items: ConfirmReturnItemPayload[],
 ): Promise<Reservation> => {
-  const res = await axios.post(`/reservations/${id}/confirm-return`);
-
+  const res = await axios.post(`/reservations/${id}/confirm-return`, {
+    items,
+  });
   return mapReservation(res.data.data);
 };
 

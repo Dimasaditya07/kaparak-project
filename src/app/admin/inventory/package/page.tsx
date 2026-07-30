@@ -2,10 +2,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Package, Plus, Edit, Trash2, X } from "lucide-react";
+import { Package, Plus, Edit, Trash2, X, Eye } from "lucide-react";
 import { getProducts } from "@/lib/query/product";
 import { ProductItem } from "@/lib/query/product.model";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Inter } from "next/font/google";
 import {
   getPackages,
@@ -21,6 +22,7 @@ const inter = Inter({
 });
 
 export default function PackagePage() {
+  const router = useRouter();
   const [packages, setPackages] = useState<PackageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -333,6 +335,15 @@ export default function PackagePage() {
 
                       <td className="px-6">
                         <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() =>
+                              router.push(`/admin/inventory/package/${item.id}`)
+                            }
+                            className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+                          >
+                            <Eye size={17} />
+                          </button>
+
                           <button
                             onClick={() => handleOpenEdit(item)}
                             className="p-2 text-yellow-500 hover:bg-yellow-50 rounded-lg"

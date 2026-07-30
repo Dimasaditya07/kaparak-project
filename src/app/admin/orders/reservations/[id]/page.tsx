@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import {
   CalendarDays,
   CreditCard,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -19,7 +20,11 @@ import {
   confirmReturn,
   pickupReservation,
 } from "@/lib/query/reservations";
-import { Reservation, ReservationItem } from "@/lib/query/reservations.model";
+import {
+  Reservation,
+  ReservationItem,
+  ConfirmReturnItemPayload,
+} from "@/lib/query/reservations.model";
 
 type ItemDisplay = {
   type: "product" | "package";
@@ -74,6 +79,14 @@ const PAYMENT_UI: Record<string, string> = {
   refunded: "bg-blue-50 text-blue-700 border-blue-200",
 };
 
+// State draft kondisi per item selama admin mengisi form konfirmasi return
+type ConditionDraft = {
+  good: number;
+  damaged: number;
+  lost: number;
+  note: string;
+};
+
 export default function ReservationDetailAdminPage() {
   const router = useRouter();
   const params = useParams();
@@ -81,6 +94,9 @@ export default function ReservationDetailAdminPage() {
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [drafts, setDrafts] = useState<Record<number, ConditionDraft>>({});
 
   const fetchDetail = async () => {
     try {
@@ -98,15 +114,68 @@ export default function ReservationDetailAdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
+  // Setiap kali form dibuka, siapkan draft default: semua unit dianggap "baik"
+  const openReturnForm = () => {
+    if (!reservation) return;
+
+    const initial: Record<number, ConditionDraft> = {};
+    (reservation.reservationItems ?? []).forEach((item) => {
+      initial[item.id] = {
+        good: item.quantity,
+        damaged: 0,
+        lost: 0,
+        note: "",
+      };
+    });
+
+    setDrafts(initial);
+    setShowReturnForm(true);
+    setError(null);
+  };
+
+  const updateDraft = (
+    itemId: number,
+    field: keyof ConditionDraft,
+    value: number | string,
+  ) => {
+    setDrafts((prev) => ({
+      ...prev,
+      [itemId]: { ...prev[itemId], [field]: value },
+    }));
+  };
+
   const handleConfirmReturn = async () => {
     if (!reservation) return;
 
     setError(null);
+
+    for (const item of reservation.reservationItems ?? []) {
+      const d = drafts[item.id];
+      const sum = (d?.good ?? 0) + (d?.damaged ?? 0) + (d?.lost ?? 0);
+      if (sum !== item.quantity) {
+        setError(
+          `Total baik+rusak+hilang untuk "${getItemDisplay(item).name}" harus ${item.quantity}, sekarang ${sum}.`,
+        );
+        return;
+      }
+    }
+
     setConfirming(true);
 
     try {
-      const updated = await confirmReturn(reservation.id);
+      const payload: ConfirmReturnItemPayload[] = (
+        reservation.reservationItems ?? []
+      ).map((item) => ({
+        reservation_item_id: item.id,
+        good: drafts[item.id]?.good ?? 0,
+        damaged: drafts[item.id]?.damaged ?? 0,
+        lost: drafts[item.id]?.lost ?? 0,
+        note: drafts[item.id]?.note || undefined,
+      }));
+
+      const updated = await confirmReturn(reservation.id, payload);
       setReservation(updated);
+      setShowReturnForm(false);
     } catch (err: any) {
       setError(
         err?.response?.data?.message ?? "Gagal mengonfirmasi pengembalian.",
@@ -138,6 +207,28 @@ export default function ReservationDetailAdminPage() {
       month: "long",
       year: "numeric",
     });
+
+  // Keterlambatan: bandingkan tanggal rencana kembali dengan waktu sekarang
+  // (kalau belum returned) atau dengan returned_at (kalau sudah returned)
+  const overdueInfo = useMemo(() => {
+    if (!reservation) return null;
+
+    const planned = new Date(reservation.return_date);
+    const reference = reservation.returned_at
+      ? new Date(reservation.returned_at)
+      : new Date();
+
+    const diffDays = Math.floor(
+      (reference.getTime() - planned.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (diffDays <= 0) return null;
+
+    return {
+      days: diffDays,
+      isFinal: !!reservation.returned_at,
+    };
+  }, [reservation]);
 
   if (loading) {
     return (
@@ -190,7 +281,7 @@ export default function ReservationDetailAdminPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4"
         >
           <div>
             <p className="font-mono text-xs text-slate-400 mb-1">
@@ -214,6 +305,41 @@ export default function ReservationDetailAdminPage() {
             </span>
           </div>
         </motion.div>
+
+        {/* OVERDUE BANNER */}
+        {overdueInfo && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 mb-8 p-4 rounded-2xl"
+            style={{
+              background: "rgba(239,68,68,0.06)",
+              border: "1px solid rgba(239,68,68,0.2)",
+            }}
+          >
+            <AlertTriangle size={18} className="text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-600">
+              {overdueInfo.isFinal ? (
+                <>
+                  Barang dikembalikan{" "}
+                  <span className="font-semibold">{overdueInfo.days} hari</span>{" "}
+                  lebih lambat dari jadwal (
+                  {formatDate(reservation.return_date)}
+                  ).
+                </>
+              ) : (
+                <>
+                  Sudah melewati tanggal pengembalian (
+                  {formatDate(reservation.return_date)}) selama{" "}
+                  <span className="font-semibold">{overdueInfo.days} hari</span>
+                  . Barang belum dikonfirmasi kembali.
+                </>
+              )}
+            </p>
+          </motion.div>
+        )}
+
+        {!overdueInfo && <div className="mb-8" />}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* LEFT: ITEMS */}
@@ -250,6 +376,9 @@ export default function ReservationDetailAdminPage() {
                   </p>
                   <p className="text-xs text-slate-400">
                     s/d {formatDate(reservation.return_date)}
+                    {reservation.returned_at && (
+                      <> · Dikembalikan {formatDate(reservation.returned_at)}</>
+                    )}
                   </p>
                 </div>
               </div>
@@ -276,6 +405,7 @@ export default function ReservationDetailAdminPage() {
                 ) : (
                   items.map((item) => {
                     const display = getItemDisplay(item);
+                    const hasConditionRecorded = item.condition_good !== null;
 
                     return (
                       <div key={item.id} className="px-6 py-4">
@@ -320,10 +450,7 @@ export default function ReservationDetailAdminPage() {
                           </div>
                         </div>
 
-                        {/* ====================== */}
                         {/* DETAIL ISI PAKET */}
-                        {/* ====================== */}
-
                         {item.package &&
                           item.package.packageItems &&
                           item.package.packageItems.length > 0 && (
@@ -370,6 +497,79 @@ export default function ReservationDetailAdminPage() {
                               </div>
                             </div>
                           )}
+
+                        {/* KONDISI SUDAH DIKONFIRMASI (read-only) */}
+                        {hasConditionRecorded && (
+                          <div className="mt-4 ml-18 flex flex-wrap gap-2">
+                            {item.condition_good! > 0 && (
+                              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {item.condition_good} Baik
+                              </span>
+                            )}
+                            {item.condition_damaged! > 0 && (
+                              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                                {item.condition_damaged} Rusak
+                              </span>
+                            )}
+                            {item.condition_lost! > 0 && (
+                              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-red-50 text-red-700 border border-red-200">
+                                {item.condition_lost} Hilang
+                              </span>
+                            )}
+                            {item.condition_note && (
+                              <span className="w-full text-xs text-slate-500 mt-1">
+                                Catatan: {item.condition_note}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* FORM INPUT KONDISI — hanya saat form return dibuka */}
+                        {showReturnForm && (
+                          <div className="mt-4 ml-18 rounded-xl border border-slate-200 p-4">
+                            <p className="text-xs font-semibold text-slate-700 mb-3">
+                              Kondisi barang saat dikembalikan (total harus{" "}
+                              {item.quantity})
+                            </p>
+                            <div className="grid grid-cols-3 gap-3 mb-3">
+                              {(
+                                [
+                                  { key: "good", label: "Baik" },
+                                  { key: "damaged", label: "Rusak" },
+                                  { key: "lost", label: "Hilang" },
+                                ] as const
+                              ).map((f) => (
+                                <div key={f.key}>
+                                  <label className="block text-[10px] text-slate-400 mb-1">
+                                    {f.label}
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    value={drafts[item.id]?.[f.key] ?? 0}
+                                    onChange={(e) =>
+                                      updateDraft(
+                                        item.id,
+                                        f.key,
+                                        Math.max(0, Number(e.target.value)),
+                                      )
+                                    }
+                                    className="w-full h-9 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-black"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="Catatan (opsional, mis. tenda sobek di bagian atap)"
+                              value={drafts[item.id]?.note ?? ""}
+                              onChange={(e) =>
+                                updateDraft(item.id, "note", e.target.value)
+                              }
+                              className="w-full h-9 rounded-lg border border-slate-200 px-3 text-xs outline-none focus:ring-2 focus:ring-black"
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -405,10 +605,7 @@ export default function ReservationDetailAdminPage() {
 
               {error && <p className="mt-5 text-sm text-red-500">{error}</p>}
 
-              {/* =========================
-        STATUS : CONFIRMED
-    ========================== */}
-
+              {/* STATUS: CONFIRMED */}
               {reservation.status === "confirmed" && (
                 <div className="mt-6 pt-6 border-t border-slate-100">
                   <p className="text-xs text-slate-500 mb-3">
@@ -425,31 +622,51 @@ export default function ReservationDetailAdminPage() {
                 </div>
               )}
 
-              {/* =========================
-        STATUS : PICKED UP
-    ========================== */}
-
+              {/* STATUS: PICKED UP */}
               {reservation.status === "picked_up" && (
                 <div className="mt-6 pt-6 border-t border-slate-100">
-                  <p className="text-xs text-slate-500 mb-3">
-                    Konfirmasi jika seluruh barang telah dikembalikan oleh
-                    customer.
-                  </p>
-
-                  <button
-                    onClick={handleConfirmReturn}
-                    disabled={confirming}
-                    className="w-full h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition disabled:opacity-50"
-                  >
-                    {confirming ? "Memproses..." : "Konfirmasi Pengembalian"}
-                  </button>
+                  {!showReturnForm ? (
+                    <>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Cek kondisi tiap barang sebelum konfirmasi pengembalian.
+                      </p>
+                      <button
+                        onClick={openReturnForm}
+                        className="w-full h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition"
+                      >
+                        Konfirmasi Pengembalian
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Isi kondisi tiap barang di daftar sebelah kiri, lalu
+                        kirim.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleConfirmReturn}
+                          disabled={confirming}
+                          className="flex-1 h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition disabled:opacity-50"
+                        >
+                          {confirming ? "Memproses..." : "Kirim & Selesaikan"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowReturnForm(false);
+                            setError(null);
+                          }}
+                          className="px-4 h-11 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
-              {/* =========================
-        STATUS : RETURNED
-    ========================== */}
-
+              {/* STATUS: RETURNED */}
               {reservation.status === "returned" && (
                 <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-emerald-600 font-medium">
                   <CheckCircle2 size={18} />
@@ -457,10 +674,7 @@ export default function ReservationDetailAdminPage() {
                 </div>
               )}
 
-              {/* =========================
-        STATUS : CANCELLED
-    ========================== */}
-
+              {/* STATUS: CANCELLED */}
               {reservation.status === "cancelled" && (
                 <div className="mt-6 pt-6 border-t border-slate-100 text-red-500 font-medium">
                   Reservasi telah dibatalkan.

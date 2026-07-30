@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getPendingPayment } from "@/lib/query/checkout";
 import { PendingPayment } from "@/lib/query/checkout.model";
 
-// Info tampilan yang seragam, apapun jenis item-nya (produk satuan atau paket)
+
 type CartItemDisplay = {
   type: "product" | "package";
   name: string;

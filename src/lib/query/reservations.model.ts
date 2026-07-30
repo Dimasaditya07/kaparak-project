@@ -39,6 +39,11 @@ export interface ReservationItem {
   price: number;
   subtotal: number;
 
+  condition_good: number | null;
+  condition_damaged: number | null;
+  condition_lost: number | null;
+  condition_note: string | null;
+
   // Hanya salah satu yang terisi, tergantung item-nya produk satuan atau paket
   product?: ReservationProduct | null;
   package?: PackageItem | null;
@@ -51,6 +56,7 @@ export interface Reservation {
   total: number;
   pickup_date: string;
   return_date: string;
+  returned_at: string | null;
   status: ReservationStatus;
   payment_status: PaymentStatus;
   note: string | null;
@@ -70,4 +76,12 @@ export interface ReservationResponse {
 
 export interface ReservationDetailResponse {
   data: Reservation;
+}
+
+export interface ConfirmReturnItemPayload {
+  reservation_item_id: number;
+  good: number;
+  damaged: number;
+  lost: number;
+  note?: string;
 }

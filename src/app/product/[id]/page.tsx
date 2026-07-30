@@ -73,7 +73,7 @@ export default function ProductDetailPage() {
       });
       setAdded(true);
       setTimeout(() => {
-        router.push("/cart");
+        router.push("/product");
       }, 800);
     } catch (error) {
       console.error("ADD CART ERROR", error);
