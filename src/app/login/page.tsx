@@ -6,13 +6,14 @@ import Link from "next/link";
 import { UserIcon } from "@/components/icons/UserIcon";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
 
 export default function LoginPage() {
   const router = useRouter();
-
+  const searchParams = useSearchParams();
+  const verified = searchParams.get("verified");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,21 +23,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Langsung tembak endpoint login (tidak perlu csrf-cookie)
       const response = await axios.post("/login", {
         email,
         password,
       });
 
-      // 2. Ambil token dan role dari respon Laravel
       const { token, role, name } = response.data;
 
-      // 3. Simpan token ke localStorage browser
       localStorage.setItem("token", token);
       localStorage.setItem("name", name);
       localStorage.setItem("role", role);
 
-      // 4. Arahkan berdasarkan role
       if (role === "admin") {
         router.push("/admin");
       } else {
@@ -44,9 +41,17 @@ export default function LoginPage() {
       }
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
-      console.error("Login Error:", error);
+
+      if (
+        error.response?.status === 403 &&
+        error.response.data?.message === "Email belum diverifikasi."
+      ) {
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
+
       alert(
-        error.response?.data?.message ||
+        error.response?.data?.message ??
           "Login gagal! Pastikan server menyala.",
       );
     } finally {
@@ -234,7 +239,11 @@ export default function LoginPage() {
                 Sign in with Google
               </motion.button>
             </form>
-
+            {verified && (
+              <div className="mb-5 rounded-xl bg-green-500/15 border border-green-500/30 p-4 text-sm text-green-200">
+                ✅ Email berhasil diverifikasi. Silakan login.
+              </div>
+            )}
             {/* REGISTER LINK */}
             <motion.div variants={itemVariants} className="mt-8 text-center">
               <p className="font-sans text-[11px] text-gray-400 uppercase tracking-widest">

@@ -59,7 +59,7 @@ export default function RegisterPage() {
       alert("Registrasi berhasil! Selamat datang di Kaparak.");
 
       // Arahkan ke dashboard customer
-      router.push("/login");
+      router.push("/verify-email");
     } catch (err) {
       const error = err as AxiosError<{ message?: string; errors?: unknown }>;
       console.error("Register Error:", error);

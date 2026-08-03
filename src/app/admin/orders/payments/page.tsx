@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Clock, CheckCircle, XCircle, Search } from "lucide-react";
+import { CreditCard, Search } from "lucide-react";
 
 import { Payment } from "@/lib/query/payments.model";
 import { getPayments } from "@/lib/query/payments";
@@ -33,15 +33,17 @@ export default function PaymentsPage() {
     }
   }
 
-  // RESET PAGE ketika filter berubah
+  // RESET PAGE ketika filter ATAU search berubah
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus]);
+  }, [filterStatus, search]);
 
   const formatRupiah = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
@@ -49,37 +51,53 @@ export default function PaymentsPage() {
     switch (status) {
       case "paid":
         return {
+          label: "Dibayar",
           class: "bg-emerald-50 text-emerald-700 border-emerald-200",
-          icon: <CheckCircle size={14} />,
         };
       case "pending":
         return {
+          label: "Menunggu",
           class: "bg-yellow-50 text-yellow-700 border-yellow-200",
-          icon: <Clock size={14} />,
         };
       case "failed":
         return {
+          label: "Gagal",
           class: "bg-red-50 text-red-700 border-red-200",
-          icon: <XCircle size={14} />,
+        };
+      default:
+        return {
+          label: "Dikembalikan",
+          class: "bg-slate-50 text-slate-700 border-slate-200",
         };
     }
   };
 
-  // FILTER DATA
-  const filteredPayments =
-    filterStatus === "all"
-      ? payments
-      : payments.filter((p) => p.status === filterStatus);
+  // FILTER DATA (Status + Search)
+  const filteredPayments = payments.filter((p) => {
+    const matchesStatus =
+      filterStatus === "all" ? true : p.status === filterStatus;
+
+    const searchLower = search.toLowerCase();
+    const matchesSearch =
+      !search ||
+      (p.order_id && p.order_id.toLowerCase().includes(searchLower)) ||
+      (p.reservation_id &&
+        p.reservation_id.toString().toLowerCase().includes(searchLower)) ||
+      (p.payment_method &&
+        p.payment_method.toLowerCase().includes(searchLower));
+
+    return matchesStatus && matchesSearch;
+  });
 
   // PAGINATION
-  const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE) || 1;
 
   const paginatedPayments = filteredPayments.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
 
-  // STATS
+  // STATS (Dihitung dari seluruh data master payments)
   const totalRevenue = payments
     .filter((p) => p.status === "paid")
     .reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -142,9 +160,9 @@ export default function PaymentsPage() {
           </motion.div>
         </div>
 
-        {/* FILTER */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="relative">
+        {/* FILTER & SEARCH */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-5">
+          <div className="relative flex-1 sm:flex-none">
             <Search
               size={18}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -153,8 +171,8 @@ export default function PaymentsPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search payments..."
-              className="h-11 w-65 rounded-xl border border-slate-200 pl-11 pr-4 outline-none focus:ring-2 focus:ring-black bg-white"
+              placeholder="Search order ID, reservation, method..."
+              className="h-11 w-full sm:w-72 rounded-xl border border-slate-200 pl-11 pr-4 outline-none focus:ring-2 focus:ring-black bg-white text-sm"
             />
           </div>
 
@@ -164,9 +182,9 @@ export default function PaymentsPage() {
             className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:ring-0 focus:ring-gray-200"
           >
             <option value="all">Semua Status</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
+            <option value="paid">Dibayar</option>
+            <option value="pending">Menunggu</option>
+            <option value="failed">Gagal</option>
           </select>
         </div>
 
@@ -216,9 +234,14 @@ export default function PaymentsPage() {
                       <div className="flex flex-col items-center justify-center">
                         <img
                           src="/images/empty.png"
-                          alt="Belum ada produk"
+                          alt="Belum ada data"
                           className="w-72 md:w-96 object-contain"
                         />
+                        <p className="text-slate-400 text-sm mt-4">
+                          {search
+                            ? `Tidak ada hasil untuk "${search}"`
+                            : "Tidak ada transaksi ditemukan"}
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -242,7 +265,7 @@ export default function PaymentsPage() {
                           #{p.reservation_id}
                         </td>
 
-                        <td className="py-4 px-6 text-slate-700">
+                        <td className="py-4 px-6 text-slate-700 capitalize">
                           {p.payment_method}
                         </td>
 
@@ -254,8 +277,7 @@ export default function PaymentsPage() {
                           <span
                             className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${statusUI.class}`}
                           >
-                            {statusUI.icon}
-                            {p.status}
+                            {statusUI.label}
                           </span>
                         </td>
 
@@ -283,7 +305,7 @@ export default function PaymentsPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  className="hover:bg-black hover:text-white px-4 py-2 rounded-lg border border-slate-200 disabled:opacity-50"
+                  className="hover:bg-black hover:text-white px-4 py-2 rounded-lg border border-slate-200 text-sm transition disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-inherit"
                 >
                   Prev
                 </button>
@@ -293,7 +315,7 @@ export default function PaymentsPage() {
                   onClick={() =>
                     setCurrentPage((p) => Math.min(p + 1, totalPages))
                   }
-                  className="hover:bg-black hover:text-white px-4 py-2 rounded-lg border border-slate-200 disabled:opacity-50"
+                  className="hover:bg-black hover:text-white px-4 py-2 rounded-lg border border-slate-200 text-sm transition disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-inherit"
                 >
                   Next
                 </button>

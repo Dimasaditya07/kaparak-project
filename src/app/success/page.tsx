@@ -101,16 +101,57 @@ function CountUp({
   return <>{count.toString().padStart(6, "0")}</>;
 }
 
-export default function PaymentSuccessPage() {
+export default function PaymentStatusPage() {
   const searchParams = useSearchParams();
-  const status = searchParams.get("status");
-  const isPending = status === "pending";
+  const statusParam = searchParams.get("status")?.toLowerCase();
+  const orderId = searchParams.get("order_id");
+
+  // Evaluasi Status Pembayaran
+  const isFailed =
+    statusParam === "failed" ||
+    statusParam === "deny" ||
+    statusParam === "cancel" ||
+    statusParam === "expire";
+  const isPending = statusParam === "pending";
+  const isSuccess = !isPending && !isFailed; // Default dianggap paid jika tidak pending/failed
+
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 100);
     return () => clearTimeout(t);
   }, []);
+
+  // Konfigurasi Warna berdasarkan status
+  const theme = isFailed
+    ? {
+        main: "#ef4444",
+        light: "#f87171",
+        glowRadial: "rgba(239,68,68,0.18)",
+        shadow: "rgba(239,68,68,0.12)",
+        border: "rgba(239,68,68,0.3)",
+        bgSubtle: "rgba(239,68,68,0.06)",
+        gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      }
+    : isPending
+      ? {
+          main: "#eab308",
+          light: "#facc15",
+          glowRadial: "rgba(234,179,8,0.18)",
+          shadow: "rgba(234,179,8,0.12)",
+          border: "rgba(234,179,8,0.3)",
+          bgSubtle: "rgba(234,179,8,0.06)",
+          gradient: "linear-gradient(135deg, #eab308 0%, #ca8a04 100%)",
+        }
+      : {
+          main: "#22c55e",
+          light: "#4ade80",
+          glowRadial: "rgba(74,222,128,0.18)",
+          shadow: "rgba(74,222,128,0.12)",
+          border: "rgba(74,222,128,0.3)",
+          bgSubtle: "rgba(74,222,128,0.06)",
+          gradient: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+        };
 
   return (
     <div
@@ -126,9 +167,7 @@ export default function PaymentSuccessPage() {
           style={{
             width: 700,
             height: 700,
-            background: isPending
-              ? "radial-gradient(circle, rgba(234,179,8,0.18) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(74,222,128,0.18) 0%, transparent 70%)",
+            background: `radial-gradient(circle, ${theme.glowRadial} 0%, transparent 70%)`,
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -140,8 +179,7 @@ export default function PaymentSuccessPage() {
           style={{
             width: 400,
             height: 400,
-            background:
-              "radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%)",
+            background: `radial-gradient(circle, ${theme.glowRadial} 0%, transparent 70%)`,
             top: "-10%",
             right: "-5%",
             filter: "blur(60px)",
@@ -152,8 +190,7 @@ export default function PaymentSuccessPage() {
           style={{
             width: 350,
             height: 350,
-            background:
-              "radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%)",
+            background: `radial-gradient(circle, ${theme.glowRadial} 0%, transparent 70%)`,
             bottom: "-10%",
             left: "-5%",
             filter: "blur(60px)",
@@ -161,8 +198,8 @@ export default function PaymentSuccessPage() {
         />
       </div>
 
-      {/* CONFETTI — only on success */}
-      {!isPending && <Confetti />}
+      {/* CONFETTI — hanya muncul jika berhasil */}
+      {isSuccess && <Confetti />}
 
       {/* CARD */}
       <AnimatePresence>
@@ -180,9 +217,7 @@ export default function PaymentSuccessPage() {
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 backdropFilter: "blur(32px)",
-                boxShadow: isPending
-                  ? "0 40px 80px rgba(234,179,8,0.12), 0 0 0 1px rgba(234,179,8,0.1)"
-                  : "0 40px 80px rgba(74,222,128,0.12), 0 0 0 1px rgba(74,222,128,0.08)",
+                boxShadow: `0 40px 80px ${theme.shadow}, 0 0 0 1px ${theme.border}`,
               }}
             >
               {/* SHINE */}
@@ -198,9 +233,7 @@ export default function PaymentSuccessPage() {
               <div
                 className="h-1 w-full"
                 style={{
-                  background: isPending
-                    ? "linear-gradient(90deg, transparent, #eab308, #facc15, #eab308, transparent)"
-                    : "linear-gradient(90deg, transparent, #22c55e, #4ade80, #22c55e, transparent)",
+                  background: `linear-gradient(90deg, transparent, ${theme.main}, ${theme.light}, ${theme.main}, transparent)`,
                 }}
               />
 
@@ -214,9 +247,7 @@ export default function PaymentSuccessPage() {
                       transition={{ duration: 2, repeat: Infinity }}
                       className="absolute inset-0 rounded-full"
                       style={{
-                        background: isPending
-                          ? "rgba(234,179,8,0.2)"
-                          : "rgba(74,222,128,0.2)",
+                        background: theme.glowRadial,
                         margin: -16,
                       }}
                     />
@@ -226,9 +257,7 @@ export default function PaymentSuccessPage() {
                       transition={{ duration: 2, delay: 0.4, repeat: Infinity }}
                       className="absolute inset-0 rounded-full"
                       style={{
-                        background: isPending
-                          ? "rgba(234,179,8,0.15)"
-                          : "rgba(74,222,128,0.15)",
+                        background: theme.glowRadial,
                         margin: -8,
                       }}
                     />
@@ -245,15 +274,9 @@ export default function PaymentSuccessPage() {
                       }}
                       className="relative w-24 h-24 rounded-full flex items-center justify-center"
                       style={{
-                        background: isPending
-                          ? "linear-gradient(135deg, rgba(234,179,8,0.25), rgba(234,179,8,0.1))"
-                          : "linear-gradient(135deg, rgba(74,222,128,0.25), rgba(34,197,94,0.1))",
-                        border: isPending
-                          ? "1px solid rgba(234,179,8,0.3)"
-                          : "1px solid rgba(74,222,128,0.3)",
-                        boxShadow: isPending
-                          ? "0 0 30px rgba(234,179,8,0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
-                          : "0 0 30px rgba(74,222,128,0.2), inset 0 1px 0 rgba(255,255,255,0.1)",
+                        background: `linear-gradient(135deg, ${theme.glowRadial}, transparent)`,
+                        border: `1px solid ${theme.border}`,
+                        boxShadow: `0 0 30px ${theme.shadow}, inset 0 1px 0 rgba(255,255,255,0.1)`,
                       }}
                     >
                       {isPending ? (
@@ -265,7 +288,7 @@ export default function PaymentSuccessPage() {
                             ease: "linear",
                           }}
                           className="w-11 h-11"
-                          style={{ color: "#facc15" }}
+                          style={{ color: theme.light }}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -277,13 +300,38 @@ export default function PaymentSuccessPage() {
                             d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"
                           />
                         </motion.svg>
+                      ) : isFailed ? (
+                        <motion.svg
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.5, duration: 0.4 }}
+                          className="w-12 h-12"
+                          style={{ color: theme.light }}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <motion.path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: 1 }}
+                            transition={{
+                              delay: 0.5,
+                              duration: 0.8,
+                              ease: "easeOut",
+                            }}
+                          />
+                        </motion.svg>
                       ) : (
                         <motion.svg
                           initial={{ pathLength: 0 }}
                           animate={{ pathLength: 1 }}
                           transition={{ delay: 0.5, duration: 0.6 }}
                           className="w-12 h-12"
-                          style={{ color: "#4ade80" }}
+                          style={{ color: theme.light }}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -317,16 +365,16 @@ export default function PaymentSuccessPage() {
                   <span
                     className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.35em]"
                     style={{
-                      background: isPending
-                        ? "rgba(234,179,8,0.12)"
-                        : "rgba(74,222,128,0.12)",
-                      border: isPending
-                        ? "1px solid rgba(234,179,8,0.3)"
-                        : "1px solid rgba(74,222,128,0.3)",
-                      color: isPending ? "#facc15" : "#4ade80",
+                      background: theme.bgSubtle,
+                      border: `1px solid ${theme.border}`,
+                      color: theme.light,
                     }}
                   >
-                    {isPending ? "⏳ PENDING" : "✓ PAID"}
+                    {isPending
+                      ? "⏳ PENDING"
+                      : isFailed
+                        ? "✕ FAILED"
+                        : "✓ PAID"}
                   </span>
                 </motion.div>
 
@@ -354,44 +402,62 @@ export default function PaymentSuccessPage() {
                         Diproses
                       </span>
                     </>
+                  ) : isFailed ? (
+                    <>
+                      Pembayaran
+                      <br />
+                      <span style={{ color: theme.light }}>Gagal!</span>
+                    </>
                   ) : (
                     <>
                       Pembayaran
                       <br />
-                      <span style={{ color: "#4ade80" }}>Berhasil!</span>
+                      <span style={{ color: theme.light }}>Berhasil!</span>
                     </>
                   )}
                 </motion.h1>
 
-                {/* ORDER NUMBER (fake animated) */}
-                {!isPending && (
-                  <motion.div
+                {/* DESCRIPTION FOR FAILED STATUS */}
+                {isFailed && (
+                  <motion.p
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.75 }}
-                    className="mb-8 p-4 rounded-2xl"
+                    transition={{ delay: 0.65 }}
+                    className="text-xs font-medium leading-relaxed mb-6 px-2"
+                    style={{ color: "rgba(255,255,255,0.5)" }}
+                  >
+                    Transaksi Anda tidak dapat diproses atau telah dibatalkan.
+                    Stok barang yang sempat dipesan telah dikembalikan.
+                  </motion.p>
+                )}
+
+                {/* ORDER NUMBER */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.75 }}
+                  className="mb-8 p-4 rounded-2xl"
+                  style={{
+                    background: theme.bgSubtle,
+                    border: `1px solid ${theme.border}`,
+                  }}
+                >
+                  <p
+                    className="text-[10px] uppercase tracking-[0.3em] mb-1"
+                    style={{ color: "rgba(255,255,255,0.3)" }}
+                  >
+                    Nomor Transaksi
+                  </p>
+                  <p
+                    className="font-black text-xl tracking-widest"
                     style={{
-                      background: "rgba(74,222,128,0.06)",
-                      border: "1px solid rgba(74,222,128,0.12)",
+                      color: theme.light,
+                      fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    <p
-                      className="text-[10px] uppercase tracking-[0.3em] mb-1"
-                      style={{ color: "rgba(255,255,255,0.3)" }}
-                    >
-                      Nomor Transaksi
-                    </p>
-                    <p
-                      className="font-black text-xl tracking-widest"
-                      style={{
-                        color: "#4ade80",
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      #<CountUp target={847291} />
-                    </p>
-                  </motion.div>
-                )}
+                    #{orderId ? orderId : <CountUp target={847291} />}
+                  </p>
+                </motion.div>
 
                 {/* DIVIDER */}
                 <div
@@ -409,43 +475,82 @@ export default function PaymentSuccessPage() {
                   transition={{ delay: 0.9 }}
                   className="space-y-3"
                 >
-                  <a
-                    href="/"
-                    className="relative flex items-center justify-center gap-2.5 w-full h-13 rounded-xl font-bold text-sm uppercase tracking-[0.2em] overflow-hidden transition-all duration-200 active:scale-[0.99]"
-                    style={{
-                      height: 52,
-                      background:
-                        "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
-                      color: "#0a0a0a",
-                      border: "1px solid rgba(74,222,128,0.3)",
-                      boxShadow: "0 8px 24px rgba(74,222,128,0.2)",
-                    }}
-                  >
-                    <span
-                      className="absolute inset-0 pointer-events-none"
+                  {/* MAIN BUTTON */}
+                  {isFailed ? (
+                    <a
+                      href="/cart"
+                      className="relative flex items-center justify-center gap-2.5 w-full h-13 rounded-xl font-bold text-sm uppercase tracking-[0.2em] overflow-hidden transition-all duration-200 active:scale-[0.99]"
                       style={{
-                        background:
-                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
-                        backgroundSize: "200% 100%",
-                        animation: "shimmer 2.5s infinite",
+                        height: 52,
+                        background: theme.gradient,
+                        color: "#ffffff",
+                        border: `1px solid ${theme.border}`,
+                        boxShadow: `0 8px 24px ${theme.shadow}`,
                       }}
-                    />
-                    <svg
-                      className="w-4 h-4 relative"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      <span
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+                          backgroundSize: "200% 100%",
+                          animation: "shimmer 2.5s infinite",
+                        }}
                       />
-                    </svg>
-                    <span className="relative">Kembali ke Beranda</span>
-                  </a>
+                      <svg
+                        className="w-4 h-4 relative"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                        />
+                      </svg>
+                      <span className="relative">Coba Pembayaran Lagi</span>
+                    </a>
+                  ) : (
+                    <a
+                      href="/"
+                      className="relative flex items-center justify-center gap-2.5 w-full h-13 rounded-xl font-bold text-sm uppercase tracking-[0.2em] overflow-hidden transition-all duration-200 active:scale-[0.99]"
+                      style={{
+                        height: 52,
+                        background: theme.gradient,
+                        color: "#0a0a0a",
+                        border: `1px solid ${theme.border}`,
+                        boxShadow: `0 8px 24px ${theme.shadow}`,
+                      }}
+                    >
+                      <span
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
+                          backgroundSize: "200% 100%",
+                          animation: "shimmer 2.5s infinite",
+                        }}
+                      />
+                      <svg
+                        className="w-4 h-4 relative"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                        />
+                      </svg>
+                      <span className="relative">Kembali ke Beranda</span>
+                    </a>
+                  )}
 
+                  {/* SECONDARY BUTTON */}
                   <a
                     href="/product"
                     className="flex items-center justify-center gap-2 w-full h-12 rounded-xl text-xs font-medium uppercase tracking-[0.2em] transition-all duration-200"

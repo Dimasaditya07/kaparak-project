@@ -1,14 +1,17 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { motion } from "framer-motion";
-
-import { FolderTree, Plus, Edit, Trash2, X } from "lucide-react";
-
 import { useEffect, useState } from "react";
-
-import { Inter } from "next/font/google";
-
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FolderTree,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Loader2,
+  CheckCircle2,
+  Sparkles,
+} from "lucide-react";
 import axios from "axios";
 
 import {
@@ -17,24 +20,18 @@ import {
   deleteCategory,
   updateCategory,
 } from "@/lib/query/category";
-
 import { CategoryItem } from "@/lib/query/category.model";
-
-const inter = Inter({
-  subsets: ["latin"],
-});
 
 export default function CategoryPage() {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
-
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   // MODAL
   const [openModal, setOpenModal] = useState(false);
 
   // EDIT
   const [isEdit, setIsEdit] = useState(false);
-
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // FORM
@@ -47,8 +44,8 @@ export default function CategoryPage() {
 
   async function fetchCategories() {
     try {
+      setLoading(true);
       const response = await getCategories();
-
       setCategories(response.data);
     } catch (error) {
       console.error(error);
@@ -61,232 +58,217 @@ export default function CategoryPage() {
   function resetForm() {
     setName("");
     setSlug("");
-
     setSelectedId(null);
-
     setIsEdit(false);
-
     setOpenModal(false);
   }
 
-  // CREATE
-  async function handleCreateCategory(e: React.FormEvent) {
+  // AUTO GENERATE SLUG
+  function handleNameChange(val: string) {
+    setName(val);
+    if (!isEdit) {
+      const generatedSlug = val
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/[\s_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      setSlug(generatedSlug);
+    }
+  }
+
+  // CREATE / UPDATE SUBMIT
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitting(true);
 
     try {
-      await createCategory({
-        name,
-        slug,
-      });
-
+      if (isEdit && selectedId) {
+        await updateCategory(selectedId, { name, slug });
+      } else {
+        await createCategory({ name, slug });
+      }
       await fetchCategories();
-
       resetForm();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data);
+        console.error(error.response?.data);
+        alert(
+          error.response?.data?.message || "Terjadi kesalahan pada server.",
+        );
       } else {
-        console.log(error);
+        console.error(error);
+        alert("Gagal menyimpan data kategori.");
       }
+    } finally {
+      setSubmitting(false);
     }
   }
 
   // OPEN EDIT
   function handleOpenEdit(category: CategoryItem) {
     setIsEdit(true);
-
     setSelectedId(category.id);
-
     setName(category.name);
-
     setSlug(category.slug);
-
     setOpenModal(true);
-  }
-
-  // UPDATE
-  async function handleUpdateCategory(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!selectedId) return;
-
-    try {
-      await updateCategory(selectedId, {
-        name,
-        slug,
-      });
-
-      await fetchCategories();
-
-      resetForm();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data);
-      } else {
-        console.log(error);
-      }
-    }
   }
 
   // DELETE
   async function handleDelete(id: number) {
-    const confirmDelete = confirm("Yakin ingin menghapus category?");
-
+    const confirmDelete = confirm("Yakin ingin menghapus kategori ini?");
     if (!confirmDelete) return;
 
     try {
       await deleteCategory(id);
-
       await fetchCategories();
     } catch (error) {
       console.error(error);
+      alert("Gagal menghapus kategori.");
     }
   }
 
   return (
-    <div
-      className={`${inter.className} flex-1 min-h-screen bg-slate-50 p-8 lg:p-12 antialiased`}
-    >
-      <div className="max-w-7xl mx-auto">
-        {/* HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="min-h-screen bg-slate-50/50 p-6 md:p-8 lg:p-10 font-sans antialiased text-slate-950">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* HEADER SECTION */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-              Category Inventory
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              Kategori Produk
             </h1>
-
-            <p className="text-slate-500 mt-1 text-sm">
-              Kelola semua kategori produk rental Anda
+            <p className="text-sm text-slate-500 mt-1">
+              Kelola daftar kategori dan taksonomi barang untuk inventaris
+              rental.
             </p>
           </div>
 
-          {/* BUTTON */}
           <button
             onClick={() => {
               resetForm();
               setOpenModal(true);
             }}
-            className="bg-black hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-sm hover:shadow-emerald-600/20 active:scale-95 font-medium text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium transition-colors shadow-sm cursor-pointer"
           >
-            <Plus size={18} />
-            Tambah Category
+            <Plus className="w-4 h-4" />
+            Tambah Kategori
           </button>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* TABLE CARD */}
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-sm">
-                  <th className="py-4 px-6 font-medium">Category</th>
-
-                  <th className="py-4 px-6 font-medium">Slug</th>
-
-                  <th className="py-4 px-6 font-medium text-right">Aksi</th>
+                <tr className="bg-slate-50/70 border-b border-slate-200 text-slate-600 font-semibold">
+                  <th className="py-3 px-6">Informasi Kategori</th>
+                  <th className="py-3 px-6">Slug URL</th>
+                  <th className="py-3 px-6 text-right w-28">Aksi</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {/* LOADING */}
+                {/* LOADING SKELETON */}
                 {loading ? (
-                  Array.from({
-                    length: 5,
-                  }).map((_, i) => (
+                  Array.from({ length: 4 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-slate-200 rounded-xl"></div>
-
-                          <div className="space-y-2">
-                            <div className="h-4 w-32 bg-slate-200 rounded-md"></div>
-
-                            <div className="h-3 w-20 bg-slate-200 rounded-md"></div>
+                      <td className="py-3.5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-slate-100 rounded-lg shrink-0" />
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-32 bg-slate-100 rounded" />
+                            <div className="h-2.5 w-20 bg-slate-100 rounded" />
                           </div>
                         </div>
                       </td>
-
-                      <td className="py-4 px-6">
-                        <div className="h-4 w-28 bg-slate-200 rounded-md"></div>
+                      <td className="py-3.5 px-6">
+                        <div className="h-3 w-24 bg-slate-100 rounded" />
                       </td>
-
-                      <td className="py-4 px-6">
-                        <div className="h-8 w-20 bg-slate-200 rounded-md ml-auto"></div>
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="h-7 w-16 bg-slate-100 rounded ml-auto" />
                       </td>
                     </tr>
                   ))
                 ) : categories.length === 0 ? (
-                  // EMPTY
+                  /* EMPTY STATE */
                   <tr>
-                    <td colSpan={6} className="py-16">
-                      <div className="flex flex-col items-center justify-center">
-                        <img
-                          src="/images/empty.png"
-                          alt="Belum ada produk"
-                          className="w-72 md:w-96 object-contain"
-                        />
+                    <td colSpan={3} className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-3">
+                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                          <FolderTree className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-slate-900 text-sm">
+                            Belum Ada Kategori
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Silakan tambahkan kategori produk baru untuk
+                            mengelompokkan inventaris Anda.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            resetForm();
+                            setOpenModal(true);
+                          }}
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-md text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Tambah Kategori
+                        </button>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  // DATA
+                  /* DATA LIST */
                   categories.map((item, index) => (
                     <motion.tr
                       key={item.id}
-                      initial={{
-                        opacity: 0,
-                        y: 10,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      transition={{
-                        delay: index * 0.05,
-                      }}
-                      className="hover:bg-slate-50/80 transition-colors group"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="hover:bg-slate-50/60 transition-colors group"
                     >
-                      {/* CATEGORY */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                            <FolderTree className="text-slate-400" size={20} />
+                      {/* CATEGORY INFO */}
+                      <td className="py-3.5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                            <FolderTree className="w-4 h-4" />
                           </div>
-
                           <div>
                             <p className="font-medium text-slate-900 text-sm">
                               {item.name}
                             </p>
-
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              Category Product
+                            <p className="text-[11px] text-slate-400">
+                              ID: {item.id}
                             </p>
                           </div>
                         </div>
                       </td>
 
                       {/* SLUG */}
-                      <td className="py-4 px-6">
-                        <span className="text-xs text-gray-900 font-medium tracking-wide">
+                      <td className="py-3.5 px-6">
+                        <span className="inline-flex items-center gap-1 font-mono text-xs text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
                           {item.slug}
                         </span>
                       </td>
 
-                      {/* ACTION */}
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      {/* ACTIONS */}
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleOpenEdit(item)}
-                            className="p-2 text-yellow-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors focus-visible:outline-none"
+                            title="Edit Kategori"
                           >
-                            <Edit size={16} />
+                            <Edit className="w-3.5 h-3.5" />
                           </button>
-
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                            title="Hapus Kategori"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -299,91 +281,113 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* MODAL */}
-      {openModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 overflow-y-auto">
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            className="bg-white w-full max-w-xl rounded-3xl p-8 relative"
-          >
-            {/* CLOSE */}
-            <button
+      {/* SHADCN MODAL DIALOG */}
+      <AnimatePresence>
+        {openModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* BACKDROP */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={resetForm}
-              className="absolute top-5 right-5 p-2 rounded-xl hover:bg-slate-100 transition-all"
+              className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm"
+            />
+
+            {/* MODAL CONTAINER */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="relative w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10"
             >
-              <X size={18} />
-            </button>
-
-            {/* TITLE */}
-            <h2 className="text-2xl font-semibold text-slate-900 mb-6">
-              {isEdit ? "Edit Category" : "Tambah Category"}
-            </h2>
-
-            {/* FORM */}
-            <form
-              onSubmit={isEdit ? handleUpdateCategory : handleCreateCategory}
-              className="space-y-5"
-            >
-              {/* NAME */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Nama Category
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Masukkan nama category"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              {/* SLUG */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Slug
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="tenda"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              {/* BUTTON */}
-              <div className="flex justify-end gap-3 pt-4">
+              {/* HEADER */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div>
+                  <h2 className="font-semibold text-slate-900 text-base">
+                    {isEdit ? "Edit Kategori" : "Tambah Kategori Baru"}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {isEdit
+                      ? "Perbarui detail nama dan slug kategori."
+                      : "Buat nama kategori baru untuk pengelompokkan barang."}
+                  </p>
+                </div>
                 <button
-                  type="button"
                   onClick={resetForm}
-                  className="px-5 py-3 rounded-2xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
+                  className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                 >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-5 py-3 rounded-2xl bg-black text-white hover:bg-gray-800 transition-all"
-                >
-                  {isEdit ? "Update Category" : "Simpan Category"}
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+
+              {/* FORM */}
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {/* NAME FIELD */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Nama Kategori <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Tenda & Camp"
+                    value={name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    required
+                    className="w-full h-9 px-3 rounded-md border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                {/* SLUG FIELD */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Slug URL <span className="text-rose-500">*</span>
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="tenda-camp"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    required
+                    className="w-full h-9 px-3 rounded-md border border-slate-200 font-mono text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                {/* FOOTER ACTIONS */}
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="h-9 px-4 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="h-9 px-4 rounded-md bg-slate-900 text-white text-xs font-medium shadow hover:bg-slate-800 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{isEdit ? "Update" : "Simpan"}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

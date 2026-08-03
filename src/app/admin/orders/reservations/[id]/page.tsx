@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -14,6 +13,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
+import { AxiosError } from "axios";
 
 import {
   getReservationDetail,
@@ -79,7 +79,6 @@ const PAYMENT_UI: Record<string, string> = {
   refunded: "bg-blue-50 text-blue-700 border-blue-200",
 };
 
-// State draft kondisi per item selama admin mengisi form konfirmasi return
 type ConditionDraft = {
   good: number;
   damaged: number;
@@ -90,6 +89,9 @@ type ConditionDraft = {
 export default function ReservationDetailAdminPage() {
   const router = useRouter();
   const params = useParams();
+
+  const reservationId = useMemo(() => Number(params?.id), [params?.id]);
+
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
@@ -98,23 +100,30 @@ export default function ReservationDetailAdminPage() {
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [drafts, setDrafts] = useState<Record<number, ConditionDraft>>({});
 
-  const fetchDetail = async () => {
-    try {
-      const data = await getReservationDetail(Number(params.id));
-      setReservation(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (params.id) fetchDetail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    if (!reservationId || isNaN(reservationId)) return;
 
-  // Setiap kali form dibuka, siapkan draft default: semua unit dianggap "baik"
+    let isSubscribed = true;
+
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        const data = await getReservationDetail(reservationId);
+        if (isSubscribed) setReservation(data);
+      } catch (err) {
+        console.error("Gagal mengambil detail reservasi:", err);
+      } finally {
+        if (isSubscribed) setLoading(false);
+      }
+    };
+
+    fetchDetail();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [reservationId]);
+
   const openReturnForm = () => {
     if (!reservation) return;
 
@@ -133,15 +142,52 @@ export default function ReservationDetailAdminPage() {
     setError(null);
   };
 
+  // Auto-adjust nilai condition 'good' ketika 'damaged' atau 'lost' diisi
   const updateDraft = (
     itemId: number,
     field: keyof ConditionDraft,
     value: number | string,
+    maxQty: number,
   ) => {
-    setDrafts((prev) => ({
-      ...prev,
-      [itemId]: { ...prev[itemId], [field]: value },
-    }));
+    setDrafts((prev) => {
+      const current = prev[itemId] || {
+        good: maxQty,
+        damaged: 0,
+        lost: 0,
+        note: "",
+      };
+
+      if (field === "note") {
+        return { ...prev, [itemId]: { ...current, note: value as string } };
+      }
+
+      const numVal = Math.min(maxQty, Math.max(0, Number(value) || 0));
+
+      if (field === "damaged") {
+        const remainingForGood = Math.max(0, maxQty - numVal - current.lost);
+        return {
+          ...prev,
+          [itemId]: { ...current, damaged: numVal, good: remainingForGood },
+        };
+      }
+
+      if (field === "lost") {
+        const remainingForGood = Math.max(0, maxQty - current.damaged - numVal);
+        return {
+          ...prev,
+          [itemId]: { ...current, lost: numVal, good: remainingForGood },
+        };
+      }
+
+      if (field === "good") {
+        return {
+          ...prev,
+          [itemId]: { ...current, good: numVal },
+        };
+      }
+
+      return prev;
+    });
   };
 
   const handleConfirmReturn = async () => {
@@ -154,7 +200,7 @@ export default function ReservationDetailAdminPage() {
       const sum = (d?.good ?? 0) + (d?.damaged ?? 0) + (d?.lost ?? 0);
       if (sum !== item.quantity) {
         setError(
-          `Total baik+rusak+hilang untuk "${getItemDisplay(item).name}" harus ${item.quantity}, sekarang ${sum}.`,
+          `Total barang (${getItemDisplay(item).name}): Baik + Rusak + Hilang harus berjumlah ${item.quantity}. Saat ini: ${sum}.`,
         );
         return;
       }
@@ -176,10 +222,14 @@ export default function ReservationDetailAdminPage() {
       const updated = await confirmReturn(reservation.id, payload);
       setReservation(updated);
       setShowReturnForm(false);
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ?? "Gagal mengonfirmasi pengembalian.",
-      );
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        setError(
+          err.response?.data?.message ?? "Gagal mengonfirmasi pengembalian.",
+        );
+      } else {
+        setError("Terjadi kesalahan sistem saat memproses.");
+      }
     } finally {
       setConfirming(false);
     }
@@ -194,8 +244,14 @@ export default function ReservationDetailAdminPage() {
     try {
       const updated = await pickupReservation(reservation.id);
       setReservation(updated);
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Gagal mengubah status.");
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        setError(
+          err.response?.data?.message ?? "Gagal mengubah status pengambilan.",
+        );
+      } else {
+        setError("Terjadi kesalahan sistem.");
+      }
     } finally {
       setConfirming(false);
     }
@@ -208,8 +264,6 @@ export default function ReservationDetailAdminPage() {
       year: "numeric",
     });
 
-  // Keterlambatan: bandingkan tanggal rencana kembali dengan waktu sekarang
-  // (kalau belum returned) atau dengan returned_at (kalau sudah returned)
   const overdueInfo = useMemo(() => {
     if (!reservation) return null;
 
@@ -254,7 +308,7 @@ export default function ReservationDetailAdminPage() {
           </p>
           <button
             onClick={() => router.push("/admin/orders/reservations")}
-            className="px-4 py-2 rounded-lg border hover:bg-slate-100 text-sm"
+            className="px-4 py-2 rounded-lg border hover:bg-slate-100 text-sm transition-colors"
           >
             Kembali ke Daftar
           </button>
@@ -268,7 +322,7 @@ export default function ReservationDetailAdminPage() {
   return (
     <div className="min-h-screen bg-slate-50 p-8 lg:p-12">
       <div className="max-w-5xl mx-auto">
-        {/* BACK */}
+        {/* BACK BUTTON */}
         <button
           onClick={() => router.push("/admin/orders/reservations")}
           className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors"
@@ -294,12 +348,16 @@ export default function ReservationDetailAdminPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${STATUS_UI[reservation.status] ?? STATUS_UI.pending}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                STATUS_UI[reservation.status] ?? STATUS_UI.pending
+              }`}
             >
               {reservation.status}
             </span>
             <span
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${PAYMENT_UI[reservation.payment_status] ?? PAYMENT_UI.unpaid}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                PAYMENT_UI[reservation.payment_status] ?? PAYMENT_UI.unpaid
+              }`}
             >
               {reservation.payment_status}
             </span>
@@ -311,17 +369,13 @@ export default function ReservationDetailAdminPage() {
           <motion.div
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mb-8 p-4 rounded-2xl"
-            style={{
-              background: "rgba(239,68,68,0.06)",
-              border: "1px solid rgba(239,68,68,0.2)",
-            }}
+            className="flex items-center gap-3 mb-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20"
           >
-            <AlertTriangle size={18} className="text-red-500 flex-shrink-0" />
+            <AlertTriangle size={18} className="text-red-500 shrink-0" />
             <p className="text-sm text-red-600">
               {overdueInfo.isFinal ? (
                 <>
-                  Barang dikembalikan{" "}
+                  Selesai{" "}
                   <span className="font-semibold">{overdueInfo.days} hari</span>{" "}
                   lebih lambat dari jadwal (
                   {formatDate(reservation.return_date)}
@@ -342,9 +396,9 @@ export default function ReservationDetailAdminPage() {
         {!overdueInfo && <div className="mb-8" />}
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* LEFT: ITEMS */}
+          {/* LEFT COLUMN: DETAIL & ITEMS */}
           <div className="lg:col-span-2 space-y-6">
-            {/* CUSTOMER + DATES */}
+            {/* CUSTOMER & DATE INFO */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -430,31 +484,27 @@ export default function ReservationDetailAdminPage() {
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-1">
                               {display.subLabel}
                             </p>
-
                             <p className="text-sm font-semibold text-slate-800">
                               {display.name}
                             </p>
-
                             <p className="text-xs text-slate-400">
-                              {display.code} · {item.quantity}
-                              {display.type === "package" ? " paket" : " unit"}
+                              {display.code} · {item.quantity}{" "}
+                              {display.type === "package" ? "paket" : "unit"}
                             </p>
                           </div>
 
                           <div className="text-right">
                             <p className="text-xs text-slate-400">Subtotal</p>
-
                             <p className="text-sm font-semibold text-slate-800">
                               Rp {Number(item.subtotal).toLocaleString("id-ID")}
                             </p>
                           </div>
                         </div>
 
-                        {/* DETAIL ISI PAKET */}
-                        {item.package &&
-                          item.package.packageItems &&
+                        {/* PACKAGE CONTENT */}
+                        {item.package?.packageItems &&
                           item.package.packageItems.length > 0 && (
-                            <div className="mt-4 ml-18 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="mt-4 sm:ml-18 rounded-xl border border-slate-200 bg-slate-50 p-4">
                               <p className="text-xs font-semibold text-slate-700 mb-3">
                                 Barang termasuk dalam paket:
                               </p>
@@ -466,7 +516,7 @@ export default function ReservationDetailAdminPage() {
                                       key={packageItem.id}
                                       className="flex items-center gap-3"
                                     >
-                                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border flex items-center justify-center">
+                                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border flex items-center justify-center flex-shrink-0">
                                         {packageItem.product?.image_url ? (
                                           <img
                                             src={packageItem.product.image_url}
@@ -485,7 +535,6 @@ export default function ReservationDetailAdminPage() {
                                         <p className="text-sm font-medium text-slate-800">
                                           {packageItem.product?.name}
                                         </p>
-
                                         <p className="text-xs text-slate-500">
                                           {packageItem.product?.code} •{" "}
                                           {packageItem.quantity} unit
@@ -498,9 +547,9 @@ export default function ReservationDetailAdminPage() {
                             </div>
                           )}
 
-                        {/* KONDISI SUDAH DIKONFIRMASI (read-only) */}
+                        {/* CONDITION RECORDED (READ ONLY) */}
                         {hasConditionRecorded && (
-                          <div className="mt-4 ml-18 flex flex-wrap gap-2">
+                          <div className="mt-4 sm:ml-18 flex flex-wrap gap-2">
                             {item.condition_good! > 0 && (
                               <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 {item.condition_good} Baik
@@ -524,12 +573,11 @@ export default function ReservationDetailAdminPage() {
                           </div>
                         )}
 
-                        {/* FORM INPUT KONDISI — hanya saat form return dibuka */}
+                        {/* RETURN FORM INPUT */}
                         {showReturnForm && (
-                          <div className="mt-4 ml-18 rounded-xl border border-slate-200 p-4">
+                          <div className="mt-4 sm:ml-18 rounded-xl border border-slate-200 p-4 bg-slate-50/50">
                             <p className="text-xs font-semibold text-slate-700 mb-3">
-                              Kondisi barang saat dikembalikan (total harus{" "}
-                              {item.quantity})
+                              Kondisi pengembalian (total unit: {item.quantity})
                             </p>
                             <div className="grid grid-cols-3 gap-3 mb-3">
                               {(
@@ -540,33 +588,40 @@ export default function ReservationDetailAdminPage() {
                                 ] as const
                               ).map((f) => (
                                 <div key={f.key}>
-                                  <label className="block text-[10px] text-slate-400 mb-1">
+                                  <label className="block text-[10px] text-slate-500 mb-1 font-medium">
                                     {f.label}
                                   </label>
                                   <input
                                     type="number"
                                     min={0}
+                                    max={item.quantity}
                                     value={drafts[item.id]?.[f.key] ?? 0}
                                     onChange={(e) =>
                                       updateDraft(
                                         item.id,
                                         f.key,
-                                        Math.max(0, Number(e.target.value)),
+                                        e.target.value,
+                                        item.quantity,
                                       )
                                     }
-                                    className="w-full h-9 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-black"
+                                    className="w-full h-9 rounded-lg border border-slate-200 px-3 text-sm bg-white outline-none focus:ring-2 focus:ring-slate-900 transition"
                                   />
                                 </div>
                               ))}
                             </div>
                             <input
                               type="text"
-                              placeholder="Catatan (opsional, mis. tenda sobek di bagian atap)"
+                              placeholder="Catatan kondisi (opsional, contoh: Tali tenda putus)"
                               value={drafts[item.id]?.note ?? ""}
                               onChange={(e) =>
-                                updateDraft(item.id, "note", e.target.value)
+                                updateDraft(
+                                  item.id,
+                                  "note",
+                                  e.target.value,
+                                  item.quantity,
+                                )
                               }
-                              className="w-full h-9 rounded-lg border border-slate-200 px-3 text-xs outline-none focus:ring-2 focus:ring-black"
+                              className="w-full h-9 rounded-lg border border-slate-200 px-3 text-xs bg-white outline-none focus:ring-2 focus:ring-slate-900 transition"
                             />
                           </div>
                         )}
@@ -578,14 +633,14 @@ export default function ReservationDetailAdminPage() {
             </motion.div>
           </div>
 
-          {/* RIGHT: SUMMARY + ACTION */}
+          {/* RIGHT COLUMN: ACTION & SUMMARY */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="lg:sticky lg:top-8 h-fit"
           >
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-5">
                 <CreditCard size={16} className="text-slate-500" />
                 <h2 className="font-semibold text-slate-800 text-sm">
@@ -597,32 +652,33 @@ export default function ReservationDetailAdminPage() {
                 <span className="text-sm font-semibold text-slate-500">
                   Total
                 </span>
-
                 <span className="text-xl font-bold text-emerald-600">
                   Rp {Number(reservation.total).toLocaleString("id-ID")}
                 </span>
               </div>
 
-              {error && <p className="mt-5 text-sm text-red-500">{error}</p>}
+              {error && (
+                <p className="mt-4 p-3 rounded-lg bg-red-50 text-xs font-medium text-red-600 border border-red-100">
+                  {error}
+                </p>
+              )}
 
-              {/* STATUS: CONFIRMED */}
+              {/* ACTION BUTTONS */}
               {reservation.status === "confirmed" && (
                 <div className="mt-6 pt-6 border-t border-slate-100">
                   <p className="text-xs text-slate-500 mb-3">
                     Klik tombol berikut ketika customer sudah mengambil barang.
                   </p>
-
                   <button
                     onClick={handlePickup}
                     disabled={confirming}
-                    className="w-full h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition disabled:opacity-50"
+                    className="w-full h-11 rounded-xl bg-slate-900 text-white font-medium hover:bg-emerald-600 transition disabled:opacity-50"
                   >
                     {confirming ? "Memproses..." : "Tandai Barang Diambil"}
                   </button>
                 </div>
               )}
 
-              {/* STATUS: PICKED UP */}
               {reservation.status === "picked_up" && (
                 <div className="mt-6 pt-6 border-t border-slate-100">
                   {!showReturnForm ? (
@@ -632,7 +688,7 @@ export default function ReservationDetailAdminPage() {
                       </p>
                       <button
                         onClick={openReturnForm}
-                        className="w-full h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition"
+                        className="w-full h-11 rounded-xl bg-slate-900 text-white font-medium hover:bg-emerald-600 transition"
                       >
                         Konfirmasi Pengembalian
                       </button>
@@ -640,14 +696,14 @@ export default function ReservationDetailAdminPage() {
                   ) : (
                     <>
                       <p className="text-xs text-slate-500 mb-3">
-                        Isi kondisi tiap barang di daftar sebelah kiri, lalu
+                        Isi kondisi barang pada list di sebelah kiri, lalu
                         kirim.
                       </p>
                       <div className="flex gap-2">
                         <button
                           onClick={handleConfirmReturn}
                           disabled={confirming}
-                          className="flex-1 h-11 rounded-xl bg-gray-900 text-white font-semibold hover:bg-emerald-600 transition disabled:opacity-50"
+                          className="flex-1 h-11 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-emerald-600 transition disabled:opacity-50"
                         >
                           {confirming ? "Memproses..." : "Kirim & Selesaikan"}
                         </button>
@@ -656,7 +712,7 @@ export default function ReservationDetailAdminPage() {
                             setShowReturnForm(false);
                             setError(null);
                           }}
-                          className="px-4 h-11 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition"
+                          className="px-4 h-11 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition"
                         >
                           Batal
                         </button>
@@ -666,17 +722,15 @@ export default function ReservationDetailAdminPage() {
                 </div>
               )}
 
-              {/* STATUS: RETURNED */}
               {reservation.status === "returned" && (
-                <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-emerald-600 font-medium">
+                <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-emerald-600 font-medium text-sm">
                   <CheckCircle2 size={18} />
                   Barang sudah dikembalikan
                 </div>
               )}
 
-              {/* STATUS: CANCELLED */}
               {reservation.status === "cancelled" && (
-                <div className="mt-6 pt-6 border-t border-slate-100 text-red-500 font-medium">
+                <div className="mt-6 pt-6 border-t border-slate-100 text-red-500 font-medium text-sm">
                   Reservasi telah dibatalkan.
                 </div>
               )}

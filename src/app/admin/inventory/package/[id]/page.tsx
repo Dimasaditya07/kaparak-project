@@ -4,7 +4,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Inter } from "next/font/google";
 import {
   ArrowLeft,
   Package as PackageIcon,
@@ -12,12 +11,13 @@ import {
   Boxes,
   Trash2,
   Pencil,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 import { getPackage, deletePackage } from "@/lib/query/package";
 import { PackageItem, PackageProduct } from "@/lib/query/package.model";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function PackageDetailAdminPage() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function PackageDetailAdminPage() {
     setDeleting(true);
     try {
       await deletePackage(pkg.id);
-      router.push("/admin/inventory/packages");
+      router.push("/admin/inventory/package");
     } catch (error) {
       console.error(error);
       alert("Gagal menghapus paket.");
@@ -76,13 +76,20 @@ export default function PackageDetailAdminPage() {
 
   if (loading) {
     return (
-      <div
-        className={`${inter.className} min-h-screen bg-slate-50 p-8 lg:p-12`}
-      >
-        <div className="max-w-5xl mx-auto space-y-4">
-          <div className="h-8 w-40 bg-slate-200 rounded animate-pulse" />
-          <div className="h-64 bg-slate-200 rounded-2xl animate-pulse" />
-          <div className="h-64 bg-slate-200 rounded-2xl animate-pulse" />
+      <div className="min-h-screen bg-slate-50/50 p-6 md:p-8 lg:p-10 font-sans antialiased text-slate-950">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="h-5 w-36 bg-slate-200 rounded animate-pulse" />
+          <div className="h-12 w-1/3 bg-slate-200 rounded-md animate-pulse" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-72 bg-slate-200 rounded-xl animate-pulse" />
+              <div className="h-64 bg-slate-200 rounded-xl animate-pulse" />
+            </div>
+            <div className="space-y-6">
+              <div className="h-48 bg-slate-200 rounded-xl animate-pulse" />
+              <div className="h-32 bg-slate-200 rounded-xl animate-pulse" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -90,21 +97,22 @@ export default function PackageDetailAdminPage() {
 
   if (!pkg) {
     return (
-      <div
-        className={`${inter.className} min-h-screen bg-slate-50 flex items-center justify-center p-8`}
-      >
-        <div className="text-center bg-white border border-slate-200 rounded-2xl p-10 max-w-sm">
-          <p className="font-semibold text-slate-800 mb-1">
+      <div className="min-h-screen bg-slate-50/50 flex items-center justify-center p-6 font-sans text-slate-950">
+        <div className="text-center bg-white border border-slate-200 rounded-xl p-8 max-w-md w-full shadow-sm">
+          <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-600">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="font-semibold text-slate-900 text-base mb-1">
             Paket Tidak Ditemukan
-          </p>
-          <p className="text-sm text-slate-500 mb-5">
-            Pastikan ID paket sudah benar.
+          </h3>
+          <p className="text-sm text-slate-500 mb-6">
+            Data paket tidak dapat dimuat atau ID paket yang dimasukkan salah.
           </p>
           <button
-            onClick={() => router.push("/admin/inventory/packages")}
-            className="px-4 py-2 rounded-lg border hover:bg-slate-100 text-sm"
+            onClick={() => router.push("/admin/inventory/package")}
+            className="inline-flex w-full items-center justify-center rounded-md text-sm font-medium border border-slate-200 bg-white shadow-sm hover:bg-slate-100 h-9 px-4 transition-colors"
           >
-            Kembali ke Daftar
+            Kembali ke Daftar Paket
           </button>
         </div>
       </div>
@@ -112,71 +120,93 @@ export default function PackageDetailAdminPage() {
   }
 
   return (
-    <div className={`${inter.className} min-h-screen bg-slate-50 p-8 lg:p-12`}>
-      <div className="max-w-5xl mx-auto">
-        {/* BACK */}
-        <button
-          onClick={() => router.push("/admin/inventory/packages")}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Kembali ke Daftar Paket
-        </button>
+    <div className="min-h-screen bg-slate-50/50 p-6 md:p-8 lg:p-10 font-sans antialiased text-slate-950">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* BACK BUTTON & NAVIGATION */}
+        <div>
+          <button
+            onClick={() => router.push("/admin/inventory/package")}
+            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium mb-3"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali ke Daftar Paket
+          </button>
 
-        {/* HEADER */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
-        >
-          <div>
-            <p className="font-mono text-xs text-slate-400 mb-1">{pkg.code}</p>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              {pkg.name}
-            </h1>
-          </div>
+          {/* HEADER ACTION BAR */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5"
+          >
+            <div>
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                {pkg.code}
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mt-2">
+                {pkg.name}
+              </h1>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                pkg.status === "available"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-red-50 text-red-700 border-red-200"
-              }`}
-            >
-              {pkg.status === "available" ? "Available" : "Inactive"}
-            </span>
+            <div className="flex items-center gap-3">
+              {/* STATUS BADGE */}
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                  pkg.status === "available"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-slate-100 text-slate-600 border-slate-200"
+                }`}
+              >
+                {pkg.status === "available" ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Available
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-3.5 h-3.5 text-slate-400" />
+                    Inactive
+                  </>
+                )}
+              </span>
 
-            <button
-              onClick={() => router.push("/admin/inventory/package")}
-              className="p-2.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100"
-              title="Edit paket dari halaman daftar"
-            >
-              <Pencil size={16} />
-            </button>
+              {/* EDIT BUTTON */}
+              <button
+                onClick={() =>
+                  router.push(`/admin/inventory/package/edit/${pkg.id}`)
+                }
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+                title="Edit data paket"
+              >
+                <Pencil className="w-4 h-4 text-slate-500" />
+                <span>Edit</span>
+              </button>
 
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="p-2.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-50"
-              title="Hapus paket"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        </motion.div>
+              {/* DELETE BUTTON */}
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-white px-3 py-1.5 text-sm font-medium text-rose-600 shadow-sm hover:bg-rose-50 transition-colors disabled:opacity-50"
+                title="Hapus paket"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{deleting ? "Menghapus..." : "Hapus"}</span>
+              </button>
+            </div>
+          </motion.div>
+        </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* LEFT */}
+        {/* CONTENT MAIN GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* LEFT COLUMN: IMAGE, DESCRIPTION & ITEMS */}
           <div className="lg:col-span-2 space-y-6">
-            {/* IMAGE + DESCRIPTION */}
+            {/* CARD: IMAGE & DESKRIPSI */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-slate-200 rounded-2xl overflow-hidden"
+              className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
             >
               <div
-                className="w-full bg-slate-100"
+                className="w-full bg-slate-100 relative border-b border-slate-100"
                 style={{ aspectRatio: "16/7" }}
               >
                 {pkg.image_url ? (
@@ -186,90 +216,110 @@ export default function PackageDetailAdminPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <PackageIcon size={40} className="text-slate-300" />
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                    <PackageIcon className="w-10 h-10 stroke-[1.25]" />
+                    <span className="text-xs mt-2">Tidak ada gambar</span>
                   </div>
                 )}
               </div>
 
               <div className="p-6">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                  Deskripsi
-                </p>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Deskripsi Paket
+                </h3>
                 <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
-                  {pkg.description || "Tidak ada deskripsi untuk paket ini."}
+                  {pkg.description ||
+                    "Tidak ada deskripsi rinci untuk paket bundling ini."}
                 </p>
               </div>
             </motion.div>
 
-            {/* ITEMS LIST */}
+            {/* CARD: PACKAGE ITEMS LIST */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="bg-white border border-slate-200 rounded-2xl overflow-hidden"
+              className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
             >
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-                <Boxes size={16} className="text-slate-500" />
-                <h2 className="font-semibold text-slate-800 text-sm">
-                  Barang dalam Paket ({pkg.packageItems?.length ?? 0})
-                </h2>
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Boxes className="w-4 h-4 text-slate-500" />
+                  <h2 className="font-semibold text-slate-900 text-sm">
+                    Komponen Produk Paket
+                  </h2>
+                </div>
+                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                  {pkg.packageItems?.length ?? 0} Item
+                </span>
               </div>
 
               <div className="divide-y divide-slate-100">
                 {(pkg.packageItems ?? []).length === 0 ? (
-                  <p className="px-6 py-8 text-sm text-slate-400 text-center">
-                    Belum ada barang di paket ini.
-                  </p>
+                  <div className="p-8 text-center text-slate-400 text-sm">
+                    Belum ada perlengkapan yang dimasukkan ke dalam paket ini.
+                  </div>
                 ) : (
                   pkg.packageItems.map((pi: PackageProduct) => (
                     <div
                       key={pi.id}
-                      className="flex items-center gap-4 px-6 py-4"
+                      className="p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors"
                     >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
-                        {pi.product.image_url ? (
-                          <img
-                            src={pi.product.image_url}
-                            alt={pi.product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <PackageIcon size={20} className="text-slate-300" />
-                        )}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center">
+                          {pi.product.image_url ? (
+                            <img
+                              src={pi.product.image_url}
+                              alt={pi.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <PackageIcon className="w-5 h-5 text-slate-300" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {pi.product.name}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            SKU:{" "}
+                            <span className="font-mono text-slate-500">
+                              {pi.product.code}
+                            </span>{" "}
+                            ·{" "}
+                            <span className="font-semibold text-slate-700">
+                              {pi.quantity}x
+                            </span>{" "}
+                            per paket
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate">
-                          {pi.product.name}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {pi.product.code} · {pi.quantity} unit per paket
-                        </p>
-                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-6 text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                        <div>
+                          <p className="text-[11px] text-slate-400">
+                            Stok Produk
+                          </p>
+                          <p
+                            className={`text-xs font-semibold ${
+                              pi.product.stock < pi.quantity
+                                ? "text-rose-600"
+                                : "text-slate-700"
+                            }`}
+                          >
+                            {pi.product.stock} unit
+                          </p>
+                        </div>
 
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-xs text-slate-400 mb-0.5">
-                          Stok produk saat ini
-                        </p>
-                        <p
-                          className={`text-sm font-semibold ${
-                            pi.product.stock < pi.quantity
-                              ? "text-red-500"
-                              : "text-slate-700"
-                          }`}
-                        >
-                          {pi.product.stock} unit
-                        </p>
-                      </div>
-
-                      <div className="text-right flex-shrink-0 w-28">
-                        <p className="text-xs text-slate-400 mb-0.5">
-                          Harga Satuan
-                        </p>
-                        <p className="text-sm font-semibold text-slate-700">
-                          Rp {Number(pi.product.price).toLocaleString("id-ID")}
-                        </p>
+                        <div className="min-w-[100px]">
+                          <p className="text-[11px] text-slate-400">
+                            Harga Satuan
+                          </p>
+                          <p className="text-xs font-semibold text-slate-900">
+                            Rp{" "}
+                            {Number(pi.product.price).toLocaleString("id-ID")}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -278,64 +328,75 @@ export default function PackageDetailAdminPage() {
             </motion.div>
           </div>
 
-          {/* RIGHT: PRICING SUMMARY */}
+          {/* RIGHT COLUMN: PRICING & CAPACITY SUMMARY */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="lg:sticky lg:top-8 h-fit space-y-6"
+            className="space-y-6"
           >
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <Tag size={16} className="text-slate-500" />
-                <h2 className="font-semibold text-slate-800 text-sm">
-                  Rincian Harga
+            {/* PRICING CARD */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <Tag className="w-4 h-4 text-slate-500" />
+                <h2 className="font-semibold text-slate-900 text-sm">
+                  Rincian Kalkulasi Harga
                 </h2>
               </div>
 
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Harga Normal</span>
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-medium text-slate-700">
                     Rp {Number(pkg.normal_price).toLocaleString("id-ID")}
                   </span>
                 </div>
 
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Hemat</span>
-                  <span className="font-semibold text-red-500">
-                    − Rp {Number(pkg.discount_amount).toLocaleString("id-ID")}
+                  <span className="font-medium text-rose-600">
+                    - Rp {Number(pkg.discount_amount).toLocaleString("id-ID")}
                     {discountPercent > 0 && (
-                      <span className="ml-1 text-xs">({discountPercent}%)</span>
+                      <span className="ml-1 text-xs font-semibold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100">
+                        {discountPercent}%
+                      </span>
                     )}
                   </span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-4 mt-4 border-t border-dashed border-slate-200">
-                <span className="text-sm font-semibold text-slate-500">
+              <div className="flex justify-between items-baseline pt-4 border-t border-slate-100">
+                <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Harga Paket
                 </span>
-                <span className="text-xl font-bold text-emerald-600">
+                <span className="text-2xl font-bold text-emerald-600 tracking-tight">
                   Rp {Number(pkg.package_price).toLocaleString("id-ID")}
                 </span>
               </div>
             </div>
 
-            {/* CAPACITY */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Kapasitas Tersedia
-              </p>
-              <p
-                className={`text-2xl font-bold ${
-                  maxAvailablePackages > 0 ? "text-slate-900" : "text-red-500"
-                }`}
-              >
-                {maxAvailablePackages} paket
-              </p>
-              <p className="text-xs text-slate-400 mt-1">
-                Dihitung dari stok produk paling terbatas di dalam paket ini.
+            {/* CAPACITY / STOCK LIMIT CARD */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Kapasitas Paket Tersedia
+              </h3>
+              <div className="flex items-baseline gap-2 pt-1">
+                <span
+                  className={`text-3xl font-bold tracking-tight ${
+                    maxAvailablePackages > 0
+                      ? "text-slate-900"
+                      : "text-rose-600"
+                  }`}
+                >
+                  {maxAvailablePackages}
+                </span>
+                <span className="text-sm font-medium text-slate-500">
+                  Paket
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 pt-1 leading-relaxed">
+                Dihitung secara otomatis berdasarkan batas stok produk paling
+                terbatas di dalam paket ini.
               </p>
             </div>
           </motion.div>

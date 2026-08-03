@@ -1,61 +1,27 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import axios from "axios";
-import { motion } from "framer-motion";
-import { Package, Plus, Edit, Trash2, X } from "lucide-react";
-
 import { useEffect, useState } from "react";
-import { Inter } from "next/font/google";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Package, Plus, Edit, Trash2, Boxes } from "lucide-react";
 
-import {
-  getProducts,
-  createProduct,
-  deleteProduct,
-  updateProduct,
-} from "@/lib/query/product";
-
-import { getCategories } from "@/lib/query/category";
-
-import { CategoryItem } from "@/lib/query/category.model";
-
+import { getProducts, deleteProduct } from "@/lib/query/product";
 import { ProductItem } from "@/lib/query/product.model";
 
-const inter = Inter({
-  subsets: ["latin"],
-});
-
 export default function ProductPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // MODAL
-  const [openModal, setOpenModal] = useState(false);
-
-  // EDIT MODE
-  const [isEdit, setIsEdit] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-
-  // FORM
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-  const [stock, setStock] = useState(0);
-  const [price, setPrice] = useState(0);
-  const [image, setImage] = useState<File | null>(null);
-  const [categoryId, setCategoryId] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("available");
 
   useEffect(() => {
     fetchProducts();
-    fetchCategories();
   }, []);
 
   async function fetchProducts() {
     try {
+      setLoading(true);
       const response = await getProducts();
-
       setProducts(response.data);
     } catch (error) {
       console.error(error);
@@ -64,338 +30,216 @@ export default function ProductPage() {
     }
   }
 
-  async function fetchCategories() {
-    try {
-      const response = await getCategories();
-
-      setCategories(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  // RESET FORM
-  function resetForm() {
-    setName("");
-    setCode("");
-    setStock(0);
-    setPrice(0);
-
-    setCategoryId("");
-    setDescription("");
-    setStatus("available");
-
-    setImage(null);
-
-    setSelectedId(null);
-
-    setIsEdit(false);
-
-    setOpenModal(false);
-  }
-
-  // CREATE PRODUCT
-  async function handleCreateProduct(e: React.FormEvent) {
-    e.preventDefault();
-
-    try {
-      const formData = new FormData();
-
-      formData.append("name", name);
-      formData.append("code", code);
-
-      formData.append("stock", stock.toString());
-
-      formData.append("category_id", categoryId);
-      formData.append("description", description);
-      formData.append("status", status);
-
-      formData.append("price", price.toString());
-
-      if (image instanceof Blob) {
-        formData.append("image", image);
-      }
-
-      await createProduct(formData);
-
-      await fetchProducts();
-
-      resetForm();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data);
-      } else {
-        console.log(error);
-      }
-    }
-  }
-
-  // OPEN EDIT
-  function handleOpenEdit(product: ProductItem) {
-    setIsEdit(true);
-
-    setSelectedId(product.id);
-
-    setName(product.name);
-    setCode(product.code);
-    setStock(product.stock);
-    setPrice(Number(product.price));
-
-    setCategoryId(String(product.category_id));
-
-    setDescription(product.description);
-
-    setStatus(product.status);
-
-    setOpenModal(true);
-  }
-
-  // UPDATE PRODUCT
-  async function handleUpdateProduct(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!selectedId) return;
-
-    try {
-      const formData = new FormData();
-
-      formData.append("name", name);
-
-      formData.append("code", code);
-
-      formData.append("stock", stock.toString());
-
-      formData.append("price", price.toString());
-
-      formData.append("category_id", categoryId);
-
-      formData.append("description", description);
-
-      formData.append("status", status);
-
-      if (image) {
-        formData.append("image", image);
-      }
-
-      await updateProduct(selectedId, formData);
-
-      await fetchProducts();
-
-      resetForm();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data);
-      } else {
-        console.log(error);
-      }
-    }
-  }
-
-  // DELETE PRODUCT
   async function handleDelete(id: number) {
-    const confirmDelete = confirm("Yakin ingin menghapus product?");
-
+    const confirmDelete = confirm("Yakin ingin menghapus produk ini?");
     if (!confirmDelete) return;
 
     try {
       await deleteProduct(id);
-
       await fetchProducts();
     } catch (error) {
       console.error(error);
+      alert("Gagal menghapus produk.");
     }
   }
 
   return (
-    <div
-      className={`${inter.className} flex-1 min-h-screen bg-slate-50 p-8 lg:p-12 antialiased`}
-    >
-      <div className="max-w-7xl mx-auto">
-        {/* HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="min-h-screen bg-slate-50/50 p-6 md:p-8 lg:p-10 font-sans antialiased text-slate-950">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* HEADER SECTION */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-              Product Inventory
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              Inventaris Produk
             </h1>
-
-            <p className="text-slate-500 mt-1 text-sm">
-              Kelola semua produk rental dan ketersediaan stok Anda
+            <p className="text-sm text-slate-500 mt-1">
+              Kelola seluruh inventaris barang rental, tarif sewa, dan
+              ketersediaan stok Anda.
             </p>
           </div>
 
-          {/* BUTTON OPEN MODAL */}
           <button
-            onClick={() => {
-              resetForm();
-              setOpenModal(true);
-            }}
-            className="bg-black hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-sm hover:shadow-emerald-600/20 active:scale-95 font-medium text-sm"
+            onClick={() => router.push("/admin/inventory/product/create")}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium transition-colors shadow-sm cursor-pointer"
           >
-            <Plus size={18} />
+            <Plus className="w-4 h-4" />
             Tambah Produk
           </button>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* TABLE CARD */}
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-sm">
-                  <th className="py-4 px-6 font-medium">Produk</th>
-
-                  <th className="py-4 px-6 font-medium">Kode</th>
-
-                  <th className="py-4 px-6 font-medium">Category</th>
-
-                  <th className="py-4 px-6 font-medium">Harga Sewa</th>
-
-                  <th className="py-4 px-6 font-medium">Status</th>
-
-                  <th className="py-4 px-6 font-medium text-right">Aksi</th>
+                <tr className="bg-slate-50/70 border-b border-slate-200 text-slate-600 font-semibold">
+                  <th className="py-3 px-6">Detail Produk</th>
+                  <th className="py-3 px-6">Kategori</th>
+                  <th className="py-3 px-6">Harga Sewa</th>
+                  <th className="py-3 px-6">Status Stok</th>
+                  <th className="py-3 px-6 text-right w-32">Aksi</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {/* LOADING */}
+                {/* LOADING SKELETON */}
                 {loading ? (
-                  Array.from({
-                    length: 5,
-                  }).map((_, i) => (
+                  Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-slate-200 rounded-xl"></div>
-
-                          <div className="space-y-2">
-                            <div className="h-4 w-32 bg-slate-200 rounded-md"></div>
-
-                            <div className="h-3 w-20 bg-slate-200 rounded-md"></div>
+                      <td className="py-3.5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-slate-100 rounded-lg shrink-0" />
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-36 bg-slate-100 rounded" />
+                            <div className="h-2.5 w-24 bg-slate-100 rounded" />
                           </div>
                         </div>
                       </td>
-
-                      <td className="py-4 px-6">
-                        <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
+                      <td className="py-3.5 px-6">
+                        <div className="h-3 w-20 bg-slate-100 rounded" />
                       </td>
-
-                      <td className="py-4 px-6">
-                        <div className="h-4 w-28 bg-slate-200 rounded-md"></div>
+                      <td className="py-3.5 px-6">
+                        <div className="h-3.5 w-24 bg-slate-100 rounded" />
                       </td>
-
-                      <td className="py-4 px-6">
-                        <div className="h-6 w-20 bg-slate-200 rounded-full"></div>
+                      <td className="py-3.5 px-6">
+                        <div className="h-5 w-16 bg-slate-100 rounded-full" />
                       </td>
-
-                      <td className="py-4 px-6">
-                        <div className="h-8 w-8 bg-slate-200 rounded-lg ml-auto"></div>
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="h-7 w-20 bg-slate-100 rounded ml-auto" />
                       </td>
                     </tr>
                   ))
                 ) : products.length === 0 ? (
-                  // EMPTY
+                  /* EMPTY STATE */
                   <tr>
-                    <td colSpan={6} className="py-16">
-                      <div className="flex flex-col items-center justify-center">
-                        <img
-                          src="/images/empty.png"
-                          alt="Belum ada produk"
-                          className="w-72 md:w-96 object-contain"
-                        />
+                    <td colSpan={5} className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-3">
+                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                          <Boxes className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-slate-900 text-sm">
+                            Belum Ada Produk
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Silakan tambahkan produk pertama Anda untuk mulai
+                            mengelola inventaris sewa.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            router.push("/admin/inventory/product/create")
+                          }
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-md text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Tambah Produk Baru
+                        </button>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  // DATA
+                  /* DATA LIST */
                   products.map((item, index) => (
                     <motion.tr
                       key={item.id}
-                      initial={{
-                        opacity: 0,
-                        y: 10,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      transition={{
-                        delay: index * 0.05,
-                      }}
-                      className="hover:bg-slate-50/80 transition-colors group"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="hover:bg-slate-50/60 transition-colors group"
                     >
-                      {/* PRODUCT */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                            <img
-                              src={item.image_url ?? ""}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
+                      {/* PRODUCT DETAIL */}
+                      <td className="py-3.5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden text-slate-400">
+                            {item.image_url ? (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Package className="w-5 h-5" />
+                            )}
                           </div>
-
-                          <div>
+                          <div className="space-y-0.5">
                             <p className="font-medium text-slate-900 text-sm">
                               {item.name}
                             </p>
-
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              Stok: {item.stock} unit
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[11px] text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded">
+                                {item.code || `PROD-${item.id}`}
+                              </span>
+                              <span className="text-slate-300">•</span>
+                              <span className="text-[11px] text-slate-500">
+                                Stok:{" "}
+                                <strong className="text-slate-800 font-semibold">
+                                  {item.stock}
+                                </strong>{" "}
+                                unit
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* CODE */}
-                      <td className="py-4 px-6">
-                        <span className="text-xs text-gray-900 font-medium tracking-wide">
-                          {item.code}
-                        </span>
-                      </td>
-
-                      <td className="py-4 px-6">
-                        <span className="text-sm text-slate-700">
-                          {item.category?.name || "-"}
-                        </span>
+                      {/* CATEGORY */}
+                      <td className="py-3.5 px-6 text-slate-600">
+                        {item.category?.name ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-slate-700 font-medium">
+                            {item.category.name}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 font-normal">-</span>
+                        )}
                       </td>
 
                       {/* PRICE */}
-                      <td className="py-4 px-6">
-                        <span className="text-sm font-medium text-slate-900">
-                          Rp {Number(item.price).toLocaleString("id-ID")}
+                      <td className="py-3.5 px-6 font-semibold text-slate-900">
+                        Rp {Number(item.price).toLocaleString("id-ID")}
+                        <span className="text-[10px] text-slate-400 font-normal block">
+                          / hari
                         </span>
                       </td>
 
-                      {/* STATUS */}
-                      <td className="py-4 px-6">
+                      {/* STOCK STATUS */}
+                      <td className="py-3.5 px-6">
                         {item.stock > 0 ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             Tersedia
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200/60">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                             Habis
                           </span>
                         )}
                       </td>
 
-                      {/* ACTION */}
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      {/* ACTIONS */}
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {/* EDIT BUTTON */}
                           <button
-                            onClick={() => handleOpenEdit(item)}
-                            className="p-2 text-yellow-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                            onClick={() =>
+                              router.push(
+                                `/admin/inventory/product/${item.id}/edit`,
+                              )
+                            }
+                            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                            title="Edit Produk"
                           >
-                            <Edit size={16} />
+                            <Edit className="w-3.5 h-3.5" />
                           </button>
 
+                          {/* DELETE BUTTON */}
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Hapus Produk"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -407,195 +251,6 @@ export default function ProductPage() {
           </div>
         </div>
       </div>
-
-      {/* MODAL */}
-      {openModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 overflow-y-auto">
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            className="bg-white w-full max-w-xl h-[90vh] rounded-3xl p-8 relative overflow-y-auto"
-          >
-            {/* CLOSE */}
-            <button
-              onClick={resetForm}
-              className="absolute top-5 right-5 p-2 rounded-xl hover:bg-slate-100 transition-all"
-            >
-              <X size={18} />
-            </button>
-
-            {/* TITLE */}
-            <h2 className="text-2xl font-semibold text-slate-900 mb-6">
-              {isEdit ? "Edit Product" : "Tambah Product"}
-            </h2>
-
-            {/* FORM */}
-            <form
-              onSubmit={isEdit ? handleUpdateProduct : handleCreateProduct}
-              className="space-y-5"
-            >
-              {/* NAME */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Nama Product
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Masukkan nama product"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              {/* CODE */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Kode Product
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="PRD-001"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              {/* CATEGORY */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Category
-                </label>
-
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                >
-                  <option value="">Pilih Category</option>
-
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* STOCK */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Stock
-                </label>
-
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={stock}
-                  onChange={(e) => setStock(Number(e.target.value))}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              {/* DESCRIPTION */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Description
-                </label>
-
-                <textarea
-                  placeholder="Masukkan description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-black min-h-[120px]"
-                  required
-                />
-              </div>
-
-              {/* PRICE */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Harga Sewa
-                </label>
-
-                <input
-                  type="number"
-                  placeholder="100000"
-                  value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              {/* STATUS */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Status
-                </label>
-
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full h-14 border border-slate-200 rounded-2xl px-5 outline-none focus:ring-2 focus:ring-black"
-                >
-                  <option value="available">Available</option>
-
-                  <option value="unavailable">Unavailable</option>
-                </select>
-              </div>
-
-              {/* IMAGE */}
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Upload Image
-                </label>
-
-                <input
-                  type="file"
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      setImage(e.target.files[0]);
-                    }
-                  }}
-                  className="w-full border border-slate-200 rounded-2xl p-4"
-                />
-              </div>
-
-              {/* BUTTON */}
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-5 py-3 rounded-2xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-5 py-3 rounded-2xl bg-black text-white hover:bg-gray-800 transition-all"
-                >
-                  {isEdit ? "Update Product" : "Simpan Product"}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }
