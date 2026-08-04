@@ -1,13 +1,17 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import Link from "next/link";
 import { MailCheck } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function VerifyEmailPage() {
-  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
 
-  const email = searchParams.get("email");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setEmail(params.get("email") ?? "");
+  }, []);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
@@ -24,7 +28,7 @@ export default function VerifyEmailPage() {
           Kami telah mengirimkan email verifikasi ke:
         </p>
 
-        <p className="font-semibold text-green-600 mt-2">{email}</p>
+        <p className="font-semibold text-green-600 mt-2">{email || "-"}</p>
 
         <p className="mt-6 text-sm text-slate-500">
           Silakan buka email tersebut kemudian tekan tombol

@@ -1,16 +1,21 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
 
-  const token = searchParams.get("token") || "";
-  const email = searchParams.get("email") || "";
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setToken(params.get("token") ?? "");
+    setEmail(params.get("email") ?? "");
+  }, []);
 
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");

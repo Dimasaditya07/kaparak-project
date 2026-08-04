@@ -1,8 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/purity */
 /* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -102,9 +102,15 @@ function CountUp({
 }
 
 export default function PaymentStatusPage() {
-  const searchParams = useSearchParams();
-  const statusParam = searchParams.get("status")?.toLowerCase();
-  const orderId = searchParams.get("order_id");
+  const [statusParam, setStatusParam] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setStatusParam(params.get("status")?.toLowerCase() ?? null);
+    setOrderId(params.get("order_id"));
+  }, []);
 
   // Evaluasi Status Pembayaran
   const isFailed =

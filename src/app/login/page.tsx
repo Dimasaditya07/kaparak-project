@@ -6,14 +6,21 @@ import Link from "next/link";
 import { UserIcon } from "@/components/icons/UserIcon";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const verified = searchParams.get("verified");
+  const [verified, setVerified] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setVerified(params.get("verified") === "1");
+    }
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
