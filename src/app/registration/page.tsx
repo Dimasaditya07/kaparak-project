@@ -73,6 +73,10 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
+
   return (
     <main className="relative min-h-screen w-full flex items-center justify-center p-4 md:p-8 overflow-hidden bg-black font-sans">
       {/* 1. BACKGROUND IMAGE */}
@@ -316,12 +320,13 @@ export default function RegisterPage() {
 
               {/* GOOGLE SIGN IN */}
               <motion.button
+                type="button"
                 variants={itemVariants}
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+                onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-white font-mono text-[10px] uppercase tracking-widest py-4 rounded-2xl transition-all"
               >
-                <GoogleIcon className="w-4 h-4" />{" "}
-                {/* Memanggil GoogleIcon disini */}
+                <GoogleIcon className="w-5 h-5" />
                 Sign in with Google
               </motion.button>
             </form>

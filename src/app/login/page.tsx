@@ -66,6 +66,10 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
+
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
     visible: {
@@ -238,8 +242,10 @@ export default function LoginPage() {
 
               {/* GOOGLE SIGN IN */}
               <motion.button
+                type="button"
                 variants={itemVariants}
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+                onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-white font-mono text-[10px] uppercase tracking-widest py-4 rounded-2xl transition-all"
               >
                 <GoogleIcon className="w-5 h-5" />
