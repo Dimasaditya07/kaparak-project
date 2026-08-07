@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/purity */
 /* eslint-disable @next/next/no-html-link-for-pages */
@@ -376,11 +377,7 @@ export default function PaymentStatusPage() {
                       color: theme.light,
                     }}
                   >
-                    {isPending
-                      ? "⏳ PENDING"
-                      : isFailed
-                        ? "✕ FAILED"
-                        : "✓ PAID"}
+                    {isPending ? "PENDING" : isFailed ? "Gagal" : "Dibayar"}
                   </span>
                 </motion.div>
 
@@ -436,34 +433,6 @@ export default function PaymentStatusPage() {
                     Stok barang yang sempat dipesan telah dikembalikan.
                   </motion.p>
                 )}
-
-                {/* ORDER NUMBER */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.75 }}
-                  className="mb-8 p-4 rounded-2xl"
-                  style={{
-                    background: theme.bgSubtle,
-                    border: `1px solid ${theme.border}`,
-                  }}
-                >
-                  <p
-                    className="text-[10px] uppercase tracking-[0.3em] mb-1"
-                    style={{ color: "rgba(255,255,255,0.3)" }}
-                  >
-                    Nomor Transaksi
-                  </p>
-                  <p
-                    className="font-black text-xl tracking-widest"
-                    style={{
-                      color: theme.light,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    #{orderId ? orderId : <CountUp target={847291} />}
-                  </p>
-                </motion.div>
 
                 {/* DIVIDER */}
                 <div

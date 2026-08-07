@@ -7,8 +7,6 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Package as PackageIcon,
-  Tag,
-  Boxes,
   Trash2,
   Pencil,
   AlertCircle,
@@ -177,12 +175,12 @@ export default function PackageDetailAdminPage() {
                 {pkg.status === "available" ? (
                   <>
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Available
+                    Tersedia
                   </>
                 ) : (
                   <>
                     <XCircle className="w-3.5 h-3.5 text-slate-400" />
-                    Inactive
+                    Habis
                   </>
                 )}
               </span>
@@ -301,7 +299,6 @@ export default function PackageDetailAdminPage() {
             >
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Boxes className="w-4 h-4 text-slate-500" />
                   <h2 className="font-semibold text-slate-900 text-sm">
                     Komponen Produk Paket
                   </h2>
@@ -323,7 +320,7 @@ export default function PackageDetailAdminPage() {
                       className="p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
                           {pi.product.image_url ? (
                             <img
                               src={pi.product.image_url}
@@ -369,7 +366,7 @@ export default function PackageDetailAdminPage() {
                           </p>
                         </div>
 
-                        <div className="min-w-[100px]">
+                        <div className="min-w-25">
                           <p className="text-[11px] text-slate-400">
                             Harga Satuan
                           </p>
@@ -396,7 +393,6 @@ export default function PackageDetailAdminPage() {
             {/* PRICING CARD */}
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Tag className="w-4 h-4 text-slate-500" />
                 <h2 className="font-semibold text-slate-900 text-sm">
                   Rincian Kalkulasi Harga
                 </h2>

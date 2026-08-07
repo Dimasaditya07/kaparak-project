@@ -50,7 +50,12 @@ function Confetti() {
       {pieces.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0 }}
+          initial={{
+            y: -20,
+            x: `${p.x}vw`,
+            opacity: 1,
+            rotate: 0,
+          }}
           animate={{
             y: "110vh",
             opacity: [1, 1, 0.8, 0],
@@ -83,10 +88,11 @@ export default function VerifyEmailSuccessPage() {
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 100);
+
     return () => clearTimeout(t);
   }, []);
 
-  // Konfigurasi tema Hijau Kaparak
+  // Konfigurasi tema hijau KAPARAK
   const theme = {
     main: "#22c55e",
     light: "#4ade80",
@@ -102,39 +108,60 @@ export default function VerifyEmailSuccessPage() {
       className="relative min-h-screen flex items-center justify-center overflow-hidden px-4"
       style={{ background: "#0a0a0a" }}
     >
-      {/* AMBIENT GLOW */}
+      {/* EFEK CAHAYA LATAR */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
           className="absolute rounded-full"
           style={{
             width: 700,
             height: 700,
-            background: `radial-gradient(circle, ${theme.glowRadial} 0%, transparent 70%)`,
+            background: `radial-gradient(
+              circle,
+              ${theme.glowRadial} 0%,
+              transparent 70%
+            )`,
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             filter: "blur(40px)",
           }}
         />
+
         <div
           className="absolute"
           style={{
             width: 400,
             height: 400,
-            background: `radial-gradient(circle, ${theme.glowRadial} 0%, transparent 70%)`,
+            background: `radial-gradient(
+              circle,
+              ${theme.glowRadial} 0%,
+              transparent 70%
+            )`,
             top: "-10%",
             right: "-5%",
             filter: "blur(60px)",
           }}
         />
+
         <div
           className="absolute"
           style={{
             width: 350,
             height: 350,
-            background: `radial-gradient(circle, ${theme.glowRadial} 0%, transparent 70%)`,
+            background: `radial-gradient(
+              circle,
+              ${theme.glowRadial} 0%,
+              transparent 70%
+            )`,
             bottom: "-10%",
             left: "-5%",
             filter: "blur(60px)",
@@ -142,16 +169,27 @@ export default function VerifyEmailSuccessPage() {
         />
       </div>
 
-      {/* CONFETTI */}
+      {/* EFEK KONFETI */}
       <Confetti />
 
-      {/* CARD */}
+      {/* KARTU */}
       <AnimatePresence>
         {show && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            initial={{
+              opacity: 0,
+              scale: 0.85,
+              y: 30,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.65,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="relative z-10 w-full max-w-md"
           >
             <div
@@ -161,10 +199,13 @@ export default function VerifyEmailSuccessPage() {
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 backdropFilter: "blur(32px)",
-                boxShadow: `0 40px 80px ${theme.shadow}, 0 0 0 1px ${theme.border}`,
+                boxShadow: `
+                  0 40px 80px ${theme.shadow},
+                  0 0 0 1px ${theme.border}
+                `,
               }}
             >
-              {/* SHINE */}
+              {/* EFEK KILAUAN */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -173,32 +214,53 @@ export default function VerifyEmailSuccessPage() {
                 }}
               />
 
-              {/* TOP ACCENT BAR */}
+              {/* GARIS AKSEN ATAS */}
               <div
                 className="h-1 w-full"
                 style={{
-                  background: `linear-gradient(90deg, transparent, ${theme.main}, ${theme.light}, ${theme.main}, transparent)`,
+                  background: `linear-gradient(
+                    90deg,
+                    transparent,
+                    ${theme.main},
+                    ${theme.light},
+                    ${theme.main},
+                    transparent
+                  )`,
                 }}
               />
 
               <div className="p-10 text-center">
-                {/* ICON */}
+                {/* IKON */}
                 <div className="flex justify-center mb-8">
                   <div className="relative">
-                    {/* OUTER RING */}
+                    {/* LINGKARAN LUAR */}
                     <motion.div
-                      animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
+                      animate={{
+                        scale: [1, 1.3, 1],
+                        opacity: [0.5, 0, 0.5],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                      }}
                       className="absolute inset-0 rounded-full"
                       style={{
                         background: theme.glowRadial,
                         margin: -16,
                       }}
                     />
-                    {/* MIDDLE RING */}
+
+                    {/* LINGKARAN TENGAH */}
                     <motion.div
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0, 0.4] }}
-                      transition={{ duration: 2, delay: 0.4, repeat: Infinity }}
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.4, 0, 0.4],
+                      }}
+                      transition={{
+                        duration: 2,
+                        delay: 0.4,
+                        repeat: Infinity,
+                      }}
                       className="absolute inset-0 rounded-full"
                       style={{
                         background: theme.glowRadial,
@@ -206,10 +268,16 @@ export default function VerifyEmailSuccessPage() {
                       }}
                     />
 
-                    {/* ICON CIRCLE */}
+                    {/* LINGKARAN IKON */}
                     <motion.div
-                      initial={{ scale: 0, rotate: -20 }}
-                      animate={{ scale: 1, rotate: 0 }}
+                      initial={{
+                        scale: 0,
+                        rotate: -20,
+                      }}
+                      animate={{
+                        scale: 1,
+                        rotate: 0,
+                      }}
                       transition={{
                         delay: 0.3,
                         duration: 0.6,
@@ -218,15 +286,25 @@ export default function VerifyEmailSuccessPage() {
                       }}
                       className="relative w-24 h-24 rounded-full flex items-center justify-center"
                       style={{
-                        background: `linear-gradient(135deg, ${theme.glowRadial}, transparent)`,
+                        background: `linear-gradient(
+                          135deg,
+                          ${theme.glowRadial},
+                          transparent
+                        )`,
                         border: `1px solid ${theme.border}`,
-                        boxShadow: `0 0 30px ${theme.shadow}, inset 0 1px 0 rgba(255,255,255,0.1)`,
+                        boxShadow: `
+                          0 0 30px ${theme.shadow},
+                          inset 0 1px 0 rgba(255,255,255,0.1)
+                        `,
                       }}
                     >
                       <motion.svg
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
-                        transition={{ delay: 0.5, duration: 0.6 }}
+                        transition={{
+                          delay: 0.5,
+                          duration: 0.6,
+                        }}
                         className="w-12 h-12"
                         style={{ color: theme.light }}
                         fill="none"
@@ -251,11 +329,19 @@ export default function VerifyEmailSuccessPage() {
                   </div>
                 </div>
 
-                {/* STATUS BADGE */}
+                {/* STATUS */}
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
+                  initial={{
+                    opacity: 0,
+                    y: 8,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay: 0.5,
+                  }}
                   className="flex justify-center mb-4"
                 >
                   <span
@@ -266,40 +352,59 @@ export default function VerifyEmailSuccessPage() {
                       color: theme.light,
                     }}
                   >
-                    ✓ VERIFIED
+                    ✓ TERVERIFIKASI
                   </span>
                 </motion.div>
 
-                {/* TITLE */}
+                {/* JUDUL */}
                 <motion.h1
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 }}
+                  initial={{
+                    opacity: 0,
+                    y: 10,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay: 0.55,
+                  }}
                   className="font-black uppercase italic leading-[0.95] mb-3"
                   style={{
                     fontSize: "clamp(1.75rem, 5vw, 2.25rem)",
                     color: "#fff",
                   }}
                 >
-                  Email Berhasil <br />
+                  Email Berhasil
+                  <br />
                   <span style={{ color: theme.light }}>Diverifikasi!</span>
                 </motion.h1>
 
-                {/* DESCRIPTION */}
+                {/* DESKRIPSI */}
                 <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.65 }}
+                  initial={{
+                    opacity: 0,
+                    y: 10,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay: 0.65,
+                  }}
                   className="text-xs font-medium leading-relaxed mb-8 px-2"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
+                  style={{
+                    color: "rgba(255,255,255,0.6)",
+                  }}
                 >
                   Selamat! Akun{" "}
                   <span className="text-white font-bold">KAPARAK</span> Anda
-                  telah aktif. Anda sudah dapat login dan mulai menyewa
-                  perlengkapan outdoor.
+                  telah berhasil diverifikasi. Sekarang Anda sudah dapat masuk
+                  ke akun dan mulai menyewa perlengkapan outdoor.
                 </motion.p>
 
-                {/* DIVIDER */}
+                {/* PEMBATAS */}
                 <div
                   className="mb-8 h-px"
                   style={{
@@ -308,14 +413,22 @@ export default function VerifyEmailSuccessPage() {
                   }}
                 />
 
-                {/* BUTTONS */}
+                {/* TOMBOL */}
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.75 }}
+                  initial={{
+                    opacity: 0,
+                    y: 10,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay: 0.75,
+                  }}
                   className="space-y-3"
                 >
-                  {/* MAIN BUTTON */}
+                  {/* TOMBOL UTAMA */}
                   <Link
                     href="/login"
                     className="relative flex items-center justify-center gap-2.5 w-full h-13 rounded-xl font-bold text-sm uppercase tracking-[0.2em] overflow-hidden transition-all duration-200 active:scale-[0.99]"
@@ -336,6 +449,7 @@ export default function VerifyEmailSuccessPage() {
                         animation: "shimmer 2.5s infinite",
                       }}
                     />
+
                     <svg
                       className="w-4 h-4 relative"
                       fill="none"
@@ -349,10 +463,11 @@ export default function VerifyEmailSuccessPage() {
                         d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H8.25"
                       />
                     </svg>
-                    <span className="relative">Login Sekarang</span>
+
+                    <span className="relative">Masuk Sekarang</span>
                   </Link>
 
-                  {/* SECONDARY BUTTON */}
+                  {/* TOMBOL SEKUNDER */}
                   <Link
                     href="/"
                     className="flex items-center justify-center gap-2 w-full h-12 rounded-xl text-xs font-medium uppercase tracking-[0.2em] transition-all duration-200"
@@ -364,11 +479,13 @@ export default function VerifyEmailSuccessPage() {
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor =
                         "rgba(255,255,255,0.18)";
+
                       e.currentTarget.style.color = "rgba(255,255,255,0.6)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor =
                         "rgba(255,255,255,0.08)";
+
                       e.currentTarget.style.color = "rgba(255,255,255,0.35)";
                     }}
                   >
@@ -386,6 +503,7 @@ export default function VerifyEmailSuccessPage() {
           0% {
             background-position: 200% 0;
           }
+
           100% {
             background-position: -200% 0;
           }

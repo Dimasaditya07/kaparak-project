@@ -86,6 +86,7 @@ export default function ReportsPage() {
       if (!year || !month) return;
 
       setLoadingMonthly(true);
+
       try {
         const res = await getMonthlyReport(year, month);
         setMonthlyReport(res);
@@ -110,22 +111,22 @@ export default function ReportsPage() {
   const statCards = data
     ? [
         {
-          title: "Total Revenue",
+          title: "Total Pendapatan",
           value: formatRupiah(data.total_revenue),
           icon: Wallet,
         },
         {
-          title: "Reservations",
+          title: "Total Reservasi",
           value: data.total_reservations.toLocaleString("id-ID"),
           icon: CalendarRange,
         },
         {
-          title: "Total Products",
+          title: "Total Produk",
           value: data.total_products.toLocaleString("id-ID"),
           icon: Boxes,
         },
         {
-          title: "Active Users",
+          title: "Pengguna Aktif",
           value: data.active_users.toLocaleString("id-ID"),
           icon: Users,
         },
@@ -134,9 +135,18 @@ export default function ReportsPage() {
 
   const summaryItems = data
     ? [
-        { label: "Best Month", value: data.best_month?.label ?? "-" },
-        { label: "Top Item", value: data.top_item },
-        { label: "Active Users", value: data.active_users.toString() },
+        {
+          label: "Bulan Terbaik",
+          value: data.best_month?.label ?? "-",
+        },
+        {
+          label: "Produk Terlaris",
+          value: data.top_item,
+        },
+        {
+          label: "Pengguna Aktif",
+          value: data.active_users.toString(),
+        },
       ]
     : [];
 
@@ -145,19 +155,20 @@ export default function ReportsPage() {
       className={`${inter.className} min-h-screen bg-slate-50/50 p-6 md:p-10 antialiased text-slate-950`}
     >
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* HEADER SECTION */}
+        {/* HEADER */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Reports & Analytics
+              Laporan
             </h1>
+
             <p className="text-sm text-slate-500">
-              Business performance & transaction insights
+              Performa bisnis & informasi transaksi
             </p>
           </div>
         </div>
 
-        {/* STATS CARDS */}
+        {/* KARTU STATISTIK */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
@@ -184,6 +195,7 @@ export default function ReportsPage() {
                         <p className="text-xs font-medium text-slate-500 tracking-wide uppercase">
                           {item.title}
                         </p>
+
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                           {item.value}
                         </h2>
@@ -198,17 +210,18 @@ export default function ReportsPage() {
               })}
         </div>
 
-        {/* CHART + SUMMARY SECTION */}
+        {/* GRAFIK + RINGKASAN */}
         <div className="grid xl:grid-cols-3 gap-6">
-          {/* CHART CARD */}
+          {/* GRAFIK PENDAPATAN */}
           <div className="xl:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
               <div>
                 <h2 className="text-base font-semibold tracking-tight text-slate-900">
-                  Revenue Overview
+                  Ringkasan Pendapatan
                 </h2>
+
                 <p className="text-xs text-slate-500">
-                  8 bulan terakhir, dari pembayaran yang sudah lunas
+                  8 bulan terakhir berdasarkan pembayaran yang sudah lunas
                 </p>
               </div>
             </div>
@@ -219,7 +232,9 @@ export default function ReportsPage() {
                   <div
                     key={i}
                     className="flex-1 bg-slate-100 rounded-t animate-pulse"
-                    style={{ height: `${40 + (i % 4) * 30}px` }}
+                    style={{
+                      height: `${40 + (i % 4) * 30}px`,
+                    }}
                   />
                 ))}
               </div>
@@ -239,10 +254,14 @@ export default function ReportsPage() {
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${heightPx}px` }}
-                        transition={{ duration: 0.4, delay: i * 0.04 }}
+                        transition={{
+                          duration: 0.4,
+                          delay: i * 0.04,
+                        }}
                         className="w-full rounded-t bg-slate-900 transition-colors group-hover:bg-slate-700"
                         title={formatRupiah(m.total)}
                       />
+
                       <span className="text-[10px] text-slate-400">
                         {m.label}
                       </span>
@@ -253,11 +272,11 @@ export default function ReportsPage() {
             )}
           </div>
 
-          {/* SUMMARY CARD */}
+          {/* RINGKASAN PERFORMA */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
             <div>
               <h2 className="text-base font-semibold tracking-tight text-slate-900 mb-4 pb-2 border-b border-slate-100">
-                Performance Summary
+                Ringkasan Performa
               </h2>
 
               <div className="space-y-3">
@@ -276,6 +295,7 @@ export default function ReportsPage() {
                         <span className="text-slate-500 font-medium">
                           {item.label}
                         </span>
+
                         <span className="font-semibold text-slate-900">
                           {item.value}
                         </span>
@@ -286,20 +306,22 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {/* MONTHLY REVENUE PICKER SECTION */}
+        {/* PENDAPATAN PER BULAN */}
         <div className="rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm">
           <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-base font-semibold tracking-tight text-slate-900">
                 Pemasukan per Bulan
               </h2>
+
               <p className="text-xs text-slate-500">
-                Pilih bulan untuk melihat transaksi lunas pada periode itu
+                Pilih bulan untuk melihat transaksi lunas pada periode tersebut
               </p>
             </div>
 
             <div className="relative">
               <CalendarDays className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+
               <input
                 type="month"
                 value={selectedMonth}
@@ -309,7 +331,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* MONTH TOTAL HIGHLIGHT */}
+          {/* TOTAL BULAN */}
           <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {loadingMonthly ? (
               <>
@@ -322,10 +344,12 @@ export default function ReportsPage() {
                   <p className="text-xs text-slate-500">
                     Pemasukan {monthlyReport?.month} {monthlyReport?.year}
                   </p>
+
                   <p className="text-2xl font-bold text-slate-900">
                     {formatRupiah(monthlyReport?.total_revenue ?? 0)}
                   </p>
                 </div>
+
                 <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 px-3 py-1 text-xs font-semibold w-fit">
                   {monthlyReport?.total_transactions ?? 0} transaksi
                 </span>
@@ -333,25 +357,29 @@ export default function ReportsPage() {
             )}
           </div>
 
-          {/* TRANSACTIONS TABLE FOR SELECTED MONTH */}
+          {/* TABEL TRANSAKSI */}
           <div className="relative w-full overflow-auto">
             <table className="w-full caption-bottom text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-500 text-xs font-medium">
                   <th className="h-10 px-6 text-left align-middle font-medium">
-                    Code
+                    Kode
                   </th>
+
                   <th className="h-10 px-6 text-left align-middle font-medium">
-                    Customer
+                    Pelanggan
                   </th>
+
                   <th className="h-10 px-6 text-left align-middle font-medium">
                     Status
                   </th>
+
                   <th className="h-10 px-6 text-left align-middle font-medium">
                     Total
                   </th>
+
                   <th className="h-10 px-6 text-right align-middle font-medium">
-                    Action
+                    Aksi
                   </th>
                 </tr>
               </thead>
@@ -363,15 +391,19 @@ export default function ReportsPage() {
                       <td className="p-4 px-6">
                         <div className="h-4 w-20 bg-slate-100 rounded" />
                       </td>
+
                       <td className="p-4 px-6">
                         <div className="h-4 w-28 bg-slate-100 rounded" />
                       </td>
+
                       <td className="p-4 px-6">
                         <div className="h-5 w-20 bg-slate-100 rounded-full" />
                       </td>
+
                       <td className="p-4 px-6">
                         <div className="h-4 w-24 bg-slate-100 rounded" />
                       </td>
+
                       <td className="p-4 px-6">
                         <div className="h-8 w-16 bg-slate-100 rounded ml-auto" />
                       </td>
@@ -392,7 +424,10 @@ export default function ReportsPage() {
                       key={item.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 0.15, delay: index * 0.02 }}
+                      transition={{
+                        duration: 0.15,
+                        delay: index * 0.02,
+                      }}
                       className="border-b border-slate-100 transition-colors hover:bg-slate-50/60"
                     >
                       <td className="p-4 px-6 align-middle font-mono text-xs font-medium text-slate-500">
@@ -428,7 +463,7 @@ export default function ReportsPage() {
                           className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 hover:text-slate-900 transition-colors focus-visible:outline-none"
                         >
                           <Eye className="h-3.5 w-3.5" />
-                          View
+                          Lihat
                         </button>
                       </td>
                     </motion.tr>

@@ -77,10 +77,10 @@ export default function PackagePage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Package Inventory
+              Kelola Paket
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Kelola seluruh paket bundling equipment dan inventaris rental.
+              Kelola seluruh paket yang tersedia di sistem.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export default function PackagePage() {
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 bg-slate-900 text-slate-50 shadow hover:bg-slate-900/90 h-9 px-4 py-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Tambah Package</span>
+            <span>Tambah Paket</span>
           </button>
         </div>
 
@@ -102,7 +102,9 @@ export default function PackagePage() {
               <thead>
                 <tr className="border-b border-slate-200 transition-colors bg-slate-50/70 hover:bg-slate-50/70">
                   <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
-                    Package
+                    Paket
+                  </th>
+                  <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
                   </th>
                   <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
                     Harga Normal
@@ -202,8 +204,8 @@ export default function PackagePage() {
                       </td>
 
                       {/* Harga Paket */}
-                      <td className="p-4 px-6 align-middle font-semibold text-emerald-600">
-                        Rp {Number(item.package_price).toLocaleString("id-ID")}
+                      <td className="p-4 px-6 align-middle font-semibold text-slate-600">
+                        Rp {Number(item.package_price).toLocaleString("id-ID")}/hari
                       </td>
 
                       {/* Status Badge (shadcn style) */}

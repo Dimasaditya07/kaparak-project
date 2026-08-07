@@ -19,35 +19,34 @@ export default function VerifyEmailPage() {
       style={{ background: "#0a0a0a", color: "#fff" }}
     >
       {/* AMBIENT BG */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute rounded-full"
-          style={{
-            width: 600,
-            height: 600,
-            background:
-              "radial-gradient(circle, rgba(74,222,128,0.15) 0%, transparent 70%)",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            filter: "blur(50px)",
-          }}
-        />
-        <div
-          className="absolute"
-          style={{
-            width: 400,
-            height: 400,
-            background:
-              "radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%)",
-            top: "-10%",
-            right: "-5%",
-            filter: "blur(60px)",
-          }}
-        />
-      </div>
+      <motion.div
+        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute rounded-full"
+        style={{
+          width: 600,
+          height: 600,
+          background:
+            "radial-gradient(circle, rgba(74,222,128,0.15) 0%, transparent 70%)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          filter: "blur(50px)",
+        }}
+      />
+
+      <div
+        className="absolute"
+        style={{
+          width: 400,
+          height: 400,
+          background:
+            "radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%)",
+          top: "-10%",
+          right: "-5%",
+          filter: "blur(60px)",
+        }}
+      />
 
       {/* CARD */}
       <motion.div
@@ -81,8 +80,12 @@ export default function VerifyEmailPage() {
                   animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ duration: 2.2, repeat: Infinity }}
                   className="absolute inset-0 rounded-full"
-                  style={{ background: "rgba(74,222,128,0.2)", margin: -14 }}
+                  style={{
+                    background: "rgba(74,222,128,0.2)",
+                    margin: -14,
+                  }}
                 />
+
                 <div
                   className="relative w-20 h-20 rounded-full flex items-center justify-center"
                   style={{
@@ -106,6 +109,7 @@ export default function VerifyEmailPage() {
                       strokeLinejoin="round"
                       d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
                     />
+
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -125,11 +129,12 @@ export default function VerifyEmailPage() {
                     "linear-gradient(180deg, #4ade80 0%, #16a34a 100%)",
                 }}
               />
+
               <span
                 className="text-[10px] font-bold uppercase tracking-[0.35em]"
                 style={{ color: "#4ade80" }}
               >
-                One Last Step
+                Satu Langkah Lagi
               </span>
             </div>
 
@@ -150,11 +155,12 @@ export default function VerifyEmailPage() {
               </span>
             </h1>
 
+            {/* DESCRIPTION */}
             <p
               className="text-sm leading-relaxed"
               style={{ color: "rgba(255,255,255,0.45)" }}
             >
-              Kami telah mengirimkan email verifikasi ke:
+              Kami telah mengirimkan email verifikasi ke alamat berikut:
             </p>
 
             {/* EMAIL BADGE */}
@@ -165,8 +171,11 @@ export default function VerifyEmailPage() {
                 border: "1px solid rgba(74,222,128,0.2)",
               }}
             >
-              <p className="font-bold text-sm" style={{ color: "#4ade80" }}>
-                {email || "-"}
+              <p
+                className="font-bold text-sm break-all"
+                style={{ color: "#4ade80" }}
+              >
+                {email || "Email tidak ditemukan"}
               </p>
             </div>
 
@@ -179,13 +188,14 @@ export default function VerifyEmailPage() {
               }}
             />
 
+            {/* INSTRUCTION */}
             <p
               className="text-sm leading-relaxed"
               style={{ color: "rgba(255,255,255,0.4)" }}
             >
-              Silakan buka email tersebut, lalu tekan tombol{" "}
+              Silakan buka email tersebut, kemudian tekan tombol{" "}
               <span className="font-semibold" style={{ color: "#fff" }}>
-                Verify Email Address
+                Verifikasi Email
               </span>
               .
             </p>
@@ -194,8 +204,8 @@ export default function VerifyEmailPage() {
               className="mt-3 text-sm leading-relaxed"
               style={{ color: "rgba(255,255,255,0.4)" }}
             >
-              Setelah berhasil diverifikasi, Anda akan otomatis diarahkan ke
-              halaman Login.
+              Setelah email berhasil diverifikasi, Anda dapat masuk menggunakan
+              akun yang telah dibuat.
             </p>
 
             {/* BUTTON */}
@@ -221,6 +231,7 @@ export default function VerifyEmailPage() {
                     animation: "shimmer 2.5s infinite",
                   }}
                 />
+
                 <span className="relative">Kembali ke Login</span>
               </Link>
             </div>
@@ -233,6 +244,7 @@ export default function VerifyEmailPage() {
           0% {
             background-position: 200% 0;
           }
+
           100% {
             background-position: -200% 0;
           }

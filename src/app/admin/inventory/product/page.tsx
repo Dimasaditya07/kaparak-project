@@ -77,7 +77,7 @@ export default function ProductPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-slate-200">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Inventaris Produk
+              Kelola Peralatan
             </h1>
             <p className="text-sm text-slate-500 mt-1">
               Kelola seluruh inventaris barang rental, tarif sewa, dan
@@ -100,7 +100,7 @@ export default function ProductPage() {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50/70 border-b border-slate-200 text-slate-600 font-semibold">
-                  <th className="py-3 px-6">Detail Produk</th>
+                  <th className="py-3 px-6">Peralatan</th>
                   <th className="py-3 px-6">Kategori</th>
                   <th className="py-3 px-6">Harga Sewa</th>
                   <th className="py-3 px-6">Status Stok</th>

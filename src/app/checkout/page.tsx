@@ -143,7 +143,7 @@ export default function CheckoutPage() {
             className="font-black uppercase italic"
             style={{ fontSize: "clamp(3rem, 6vw, 5rem)" }}
           >
-            Confirm
+            Konfirmasi
             <br />
             <span
               style={{
@@ -151,7 +151,7 @@ export default function CheckoutPage() {
                 color: "transparent",
               }}
             >
-              Order
+              Pesanan
             </span>
           </h1>
 

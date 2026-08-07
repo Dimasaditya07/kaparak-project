@@ -3,9 +3,8 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -14,7 +13,11 @@ import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [verified, setVerified] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -22,9 +25,6 @@ export default function LoginPage() {
       setVerified(params.get("verified") === "1");
     }
   }, []);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +75,7 @@ export default function LoginPage() {
       toast.error("Login gagal", {
         description:
           error.response?.data?.message ??
-          "Pastikan email dan password yang kamu masukkan benar.",
+          "Pastikan email dan kata sandi yang kamu masukkan benar.",
       });
     } finally {
       setLoading(false);
@@ -83,17 +83,23 @@ export default function LoginPage() {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
+    hidden: {
+      opacity: 0,
+      y: 15,
+    },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeInOut" as const },
+      transition: {
+        duration: 0.6,
+        ease: "easeInOut" as const,
+      },
     },
   };
 
   return (
     <main className="relative min-h-screen w-full flex items-center justify-center p-4 md:p-8 overflow-hidden bg-black font-sans">
-      {/* BACK TO HOME */}
+      {/* KEMBALI KE BERANDA */}
       <motion.div
         initial={{ opacity: 0, x: -15 }}
         animate={{ opacity: 1, x: 0 }}
@@ -124,53 +130,65 @@ export default function LoginPage() {
           </span>
 
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-            Kembali ke Home
+            Kembali ke Beranda
           </span>
         </Link>
       </motion.div>
+
+      {/* BACKGROUND */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/bgkaparak2.jpg"
-          alt="Adventure Background"
+          alt="Latar Belakang Petualangan"
           fill
           priority
           className="object-cover"
         />
+
         <div className="absolute inset-0 bg-black/40 md:bg-transparent md:bg-linear-to-r md:from-black/80 md:via-black/40 md:to-transparent"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-6xl flex flex-col md:flex-row items-center justify-between gap-12">
-        {/* --- BAGIAN KIRI: BRANDING & TEKS --- */}
+        {/* BAGIAN KIRI: BRANDING & TEKS */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{
+            duration: 0.8,
+            ease: "easeOut",
+          }}
           className="w-full md:w-1/2 text-white text-center md:text-left"
         >
           <h1 className="text-5xl md:text-[7.5rem] font-black uppercase tracking-tight leading-[0.8] mb-8">
-            EXPLORE <br />
-            <span className="text-transparent stroke-text-thin italic">
-              HORIZONS
+            JELAJAHI
+            <br />
+            <span className="text-transparent text-8xl stroke-text-thin italic">
+              CAKRAWALA
             </span>
           </h1>
 
           <div className="space-y-4 max-w-sm mx-auto md:mx-0 border-l-2 border-green-500 pl-6">
             <p className="font-sans text-sm md:text-lg text-gray-200 font-medium leading-relaxed italic">
-              Where Your Dream Destinations Become Reality.
+              Wujudkan Destinasi Impianmu Menjadi Kenyataan.
             </p>
+
             <p className="font-sans text-[10px] text-gray-400 uppercase tracking-[0.3em] leading-loose opacity-60">
-              Embark on a journey where every corner of the world is within your
-              reach.
+              Mulailah perjalananmu dan temukan pengalaman luar biasa di setiap
+              sudut petualangan.
             </p>
           </div>
         </motion.div>
 
-        {/* --- BAGIAN KANAN: LOGIN BOX --- */}
+        {/* BAGIAN KANAN: KOTAK LOGIN */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={{
-            visible: { transition: { staggerChildren: 0.1 } },
+            visible: {
+              transition: {
+                staggerChildren: 0.1,
+              },
+            },
           }}
           className="w-full md:max-w-112.5"
         >
@@ -183,7 +201,7 @@ export default function LoginPage() {
               <Link href="/">
                 <Image
                   src="/images/kaparak3.png"
-                  alt="KAPARAK Logo"
+                  alt="Logo KAPARAK"
                   width={140}
                   height={50}
                   className="object-contain brightness-0 invert"
@@ -191,7 +209,7 @@ export default function LoginPage() {
               </Link>
             </motion.div>
 
-            {/* TITLE */}
+            {/* JUDUL */}
             <motion.h4
               variants={itemVariants}
               className="text-4xl md:text-3xl font-black uppercase tracking-tight leading-[0.8] mb-6 text-center text-white"
@@ -204,18 +222,20 @@ export default function LoginPage() {
               {/* INPUT EMAIL */}
               <motion.div variants={itemVariants} className="space-y-1">
                 <label className="font-mono text-[9px] uppercase tracking-[0.3em] text-gray-300 ml-1">
-                  Email Address
+                  Alamat Email
                 </label>
+
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <UserIcon className="w-4 h-4 text-gray-400 group-focus-within:text-green-500 transition-colors" />
                   </div>
+
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="Masukkan email Anda"
                     className="w-full bg-white border-none px-6 py-4 pl-12 rounded-2xl text-sm text-black placeholder:text-gray-400 focus:ring-2 focus:ring-green-500/50 outline-none transition-all"
                   />
                 </div>
@@ -224,8 +244,9 @@ export default function LoginPage() {
               {/* INPUT PASSWORD */}
               <motion.div variants={itemVariants} className="space-y-1">
                 <label className="font-mono text-[9px] uppercase tracking-[0.3em] text-gray-300 ml-1">
-                  Password
+                  Kata Sandi
                 </label>
+
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <svg
@@ -243,51 +264,57 @@ export default function LoginPage() {
                       />
                     </svg>
                   </div>
+
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="**********"
+                    placeholder="••••••••••"
                     className="w-full bg-white border-none px-6 py-4 pl-12 rounded-2xl text-sm text-black placeholder:text-gray-400 focus:ring-2 focus:ring-green-500/50 outline-none transition-all"
                   />
                 </div>
+
+                {/* LUPA PASSWORD */}
                 <div className="text-right mt-1">
                   <Link
                     href="/forgot-password"
                     className="font-mono text-[9px] uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
                   >
-                    Forgot password?
+                    Lupa kata sandi?
                   </Link>
                 </div>
               </motion.div>
 
-              {/* BUTTON SIGN IN */}
+              {/* TOMBOL MASUK */}
               <motion.button
                 variants={itemVariants}
                 type="submit"
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-green-600 text-white font-black uppercase tracking-[0.3em] text-[11px] py-4 rounded-2xl shadow-xl hover:bg-white hover:text-black transition-all mt-2"
+                className="w-full bg-green-600 text-white font-black uppercase tracking-[0.3em] text-[11px] py-4 rounded-2xl shadow-xl hover:bg-white hover:text-black transition-all mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
+                {loading ? "Memproses..." : "Login"}
               </motion.button>
             </form>
+
+            {/* PESAN VERIFIKASI */}
             {verified && (
-              <div className="mb-5 rounded-xl bg-green-500/15 border border-green-500/30 p-4 text-sm text-green-200">
-                Email berhasil diverifikasi. Silakan login.
+              <div className="mt-5 rounded-xl bg-green-500/15 border border-green-500/30 p-4 text-sm text-green-200">
+                Email berhasil diverifikasi. Silakan masuk ke akun Anda.
               </div>
             )}
-            {/* REGISTER LINK */}
+
+            {/* LINK REGISTRASI */}
             <motion.div variants={itemVariants} className="mt-8 text-center">
               <p className="font-sans text-[11px] text-gray-400 uppercase tracking-widest">
-                Are you new?{" "}
+                Belum punya akun?{" "}
                 <Link
                   href="/registration"
                   className="text-white font-bold border-b border-green-500 hover:text-green-500 transition-colors ml-1 pb-0.5"
                 >
-                  Create Account
+                  Buat Akun
                 </Link>
               </p>
             </motion.div>
@@ -300,6 +327,7 @@ export default function LoginPage() {
         .stroke-text-thin {
           -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
         }
+
         @media (min-width: 768px) {
           .stroke-text-thin {
             -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4);

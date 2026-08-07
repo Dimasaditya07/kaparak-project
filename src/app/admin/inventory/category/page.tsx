@@ -174,11 +174,10 @@ export default function CategoryPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-slate-200">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Kategori Produk
+              Kelola Kategori
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Kelola daftar kategori dan taksonomi barang untuk inventaris
-              rental.
+              Kelola daftar kategori produk untuk mengelompokkan Alat Anda.
             </p>
           </div>
 

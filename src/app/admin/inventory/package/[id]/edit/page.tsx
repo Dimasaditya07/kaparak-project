@@ -11,7 +11,6 @@ import {
   Trash2,
   Package as PackageIcon,
   Upload,
-  Tag,
   AlertCircle,
   Loader2,
   CheckCircle2,
@@ -356,7 +355,7 @@ export default function EditPackagePage() {
                   Gambar Sampul Paket
                 </label>
                 <div className="flex items-start gap-4">
-                  <div className="relative w-20 h-20 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <div className="relative w-20 h-20 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center">
                     {previewImageUrl ? (
                       <img
                         src={previewImageUrl}
@@ -413,7 +412,7 @@ export default function EditPackagePage() {
                   onChange={(e) => setSelectedProduct(e.target.value)}
                   className="w-full h-9 px-3 rounded-md border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-950 transition-all cursor-pointer"
                 >
-                  <option value="">Pilih Produk</option>
+                  <option value="">Pilih Peralatan</option>
                   {products.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name} - (Rp{" "}
@@ -508,7 +507,6 @@ export default function EditPackagePage() {
           {/* CARD 3: RINCIAN KALKULASI HARGA & FOOTER ACTION */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
             <div className="border-b border-slate-100 pb-4 flex items-center gap-2">
-              <Tag className="w-4 h-4 text-slate-500" />
               <h2 className="font-semibold text-slate-900 text-base">
                 Kalkulasi Harga Paket
               </h2>

@@ -3,14 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  ImagePlus,
-  Loader2,
-  PackageCheck,
-  X,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, ImagePlus, Loader2, X } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -82,18 +75,16 @@ export default function EditProductPage() {
         setStatus(targetProduct.status);
         setExistingImageUrl(targetProduct.image_url ?? null);
       } else {
-        toast.error("Produk tidak ditemukan.");
+        toast.error("Peralatan tidak ditemukan.");
         router.push("/admin/inventory/product");
       }
     } catch (error) {
-      console.error("Gagal memuat data produk:", error);
+      console.error("Gagal memuat data peralatan:", error);
 
       if (axios.isAxiosError(error)) {
-        toast.error(
-          error.response?.data?.message || "Gagal memuat data produk.",
-        );
+        toast.error(error.response?.data?.message || "Gagal memuat data peralatan.");
       } else {
-        toast.error("Gagal memuat data produk.");
+        toast.error("Gagal memuat data peralatan.");
       }
     } finally {
       setLoading(false);
@@ -130,7 +121,7 @@ export default function EditProductPage() {
     e.preventDefault();
 
     if (!id) {
-      toast.error("ID produk tidak valid.");
+      toast.error("ID peralatan tidak valid.");
       return;
     }
 
@@ -153,20 +144,18 @@ export default function EditProductPage() {
 
       await updateProduct(id, formData);
 
-      toast.success("Produk berhasil diperbarui.");
+      toast.success("Peralatan berhasil diperbarui.");
 
       router.push("/admin/inventory/product");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error response:", error.response?.data);
 
-        toast.error(
-          error.response?.data?.message || "Gagal memperbarui produk.",
-        );
+        toast.error(error.response?.data?.message || "Gagal memperbarui Peralatan.");
       } else {
         console.error(error);
 
-        toast.error("Terjadi kesalahan saat memperbarui produk.");
+        toast.error("Terjadi kesalahan saat memperbarui peralatan.");
       }
     } finally {
       setSubmitting(false);
@@ -180,9 +169,7 @@ export default function EditProductPage() {
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-slate-900" />
 
-          <p className="text-xs font-medium text-slate-500">
-            Memuat data produk...
-          </p>
+          <p className="text-xs font-medium text-slate-500">Memuat data Peralatan</p>
         </div>
       </div>
     );
@@ -199,18 +186,17 @@ export default function EditProductPage() {
             className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 mb-4 transition-colors font-medium cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali ke Daftar Produk
+            Kembali ke Daftar Peralatan
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                Edit Produk
+                Edit Peralatan
               </h1>
 
               <p className="text-sm text-slate-500 mt-1">
-                Perbarui rincian dan spesifikasi produk{" "}
-                <span className="font-mono text-slate-700">#{code}</span>
+                Perbarui rincian dan spesifikasi peralatan yang tersedia di data
               </p>
             </div>
           </div>
@@ -222,22 +208,19 @@ export default function EditProductPage() {
             {/* INFORMASI PRODUK */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <PackageCheck className="w-4 h-4 text-slate-500" />
-
                 <h2 className="text-sm font-semibold text-slate-900">
-                  Informasi Produk
+                  Informasi Peralatan
                 </h2>
               </div>
 
               {/* NAMA PRODUK */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700">
-                  Nama Produk <span className="text-rose-500">*</span>
+                  Nama Peralatan <span className="text-rose-500">*</span>
                 </label>
 
                 <input
                   type="text"
-                  placeholder="Contoh: Tenda Arpenaz 4.1 Family"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -250,12 +233,11 @@ export default function EditProductPage() {
                 {/* KODE */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
-                    Kode Produk / SKU <span className="text-rose-500">*</span>
+                    Kode Peralatan<span className="text-rose-500">*</span>
                   </label>
 
                   <input
                     type="text"
-                    placeholder="PRD-001"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     required
@@ -298,7 +280,6 @@ export default function EditProductPage() {
                   <input
                     type="number"
                     min={0}
-                    placeholder="100000"
                     value={price}
                     onChange={(e) =>
                       setPrice(
@@ -319,7 +300,6 @@ export default function EditProductPage() {
                   <input
                     type="number"
                     min={0}
-                    placeholder="0"
                     value={stock}
                     onChange={(e) =>
                       setStock(

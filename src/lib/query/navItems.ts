@@ -13,7 +13,7 @@ export const adminNavItems: AdminNavItem[] = [
     Icon: DashboardIcon,
   },
   {
-    name: "Inventory",
+    name: "Kelola",
     Icon: InventoryIcon,
     subItems: [
       {
@@ -21,36 +21,36 @@ export const adminNavItems: AdminNavItem[] = [
         href: "/admin/inventory/package",
       },
       {
-        name: "Category",
+        name: "Kategori",
         href: "/admin/inventory/category",
       },
       {
-        name: "Product",
+        name: "Peralatan",
         href: "/admin/inventory/product",
       },
     ],
   },
   {
-    name: "Orders",
+    name: "Pesanan",
     Icon: ReservationIcon,
     subItems: [
       {
-        name: "Reservations",
+        name: "Reservasi",
         href: "/admin/orders/reservations",
       },
       {
-        name: "Payments",
+        name: "Pembayaran",
         href: "/admin/orders/payments",
       }
     ]
   },
   {
-    name: "Users",
+    name: "Akun Customer",
     href: "/admin/users",
     Icon: UserIcon,
   },
   {
-    name: "Reports",
+    name: "Laporan",
     href: "/admin/reports",
     Icon: ReportsIcon,
   },

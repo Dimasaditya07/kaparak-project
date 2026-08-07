@@ -42,7 +42,7 @@ function getCartItemDisplay(item: CartItem): CartItemDisplay {
       type: "product",
       name: item.product.name,
       imageUrl: item.product.image_url ?? null,
-      subLabel: item.product.category?.name || "Outdoor Equipment",
+      subLabel: item.product.category?.name || "Peralatan Outdoor",
       unitPrice: Number(item.product.price),
     };
   }
@@ -196,7 +196,7 @@ export default function CartPage() {
               className="text-[10px] font-bold uppercase tracking-[0.4em]"
               style={{ color: "#4ade80" }}
             >
-              Rental Cart
+              Keranjang
             </p>
           </div>
 
@@ -204,7 +204,7 @@ export default function CartPage() {
             className="font-black uppercase italic leading-[0.85] mb-3"
             style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)" }}
           >
-            Your
+            Keranjang
             <br />
             <span
               style={{
@@ -212,7 +212,7 @@ export default function CartPage() {
                 color: "transparent",
               }}
             >
-              Cart
+              Anda
             </span>
           </h1>
 
@@ -668,9 +668,9 @@ export default function CartPage() {
                   {[
                     {
                       label: "Total Item",
-                      value: `${cartItems.length} item`,
+                      value: `${cartItems.length} Item`,
                     },
-                    { label: "Total Hari", value: `${totalDays} hari` },
+                    { label: "Total Hari", value: `${totalDays} Hari` },
                   ].map((s) => (
                     <div key={s.label} className="text-center">
                       <p
@@ -698,7 +698,7 @@ export default function CartPage() {
                     className="text-sm font-bold uppercase tracking-[0.15em]"
                     style={{ color: "rgba(255,255,255,0.4)" }}
                   >
-                    Grand Total
+                    Total Harga
                   </span>
                   <motion.span
                     key={totalPrice}
@@ -745,7 +745,7 @@ export default function CartPage() {
                         d="M17.25 8.75L21 12m0 0-3.75 3.25M21 12H3"
                       />
                     </svg>
-                    Checkout Rental
+                    Checkout
                   </span>
                 </button>
 

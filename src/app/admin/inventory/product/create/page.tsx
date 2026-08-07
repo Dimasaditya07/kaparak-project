@@ -77,7 +77,7 @@ export default function CreateProductPage() {
 
       await createProduct(formData);
 
-      toast.success("Produk berhasil ditambahkan.", {
+      toast.success("Peralatan berhasil ditambahkan.", {
         description: `"${name}" telah ditambahkan ke inventaris.`,
       });
 
@@ -86,16 +86,16 @@ export default function CreateProductPage() {
       if (axios.isAxiosError(error)) {
         console.error("Error response:", error.response?.data);
 
-        toast.error("Gagal menambahkan produk.", {
+        toast.error("Gagal menambahkan peralatan.", {
           description:
             error.response?.data?.message ||
-            "Terjadi kesalahan saat menyimpan produk.",
+            "Terjadi kesalahan saat menyimpan peralatan.",
         });
       } else {
         console.error(error);
 
-        toast.error("Gagal menambahkan produk.", {
-          description: "Terjadi kesalahan saat menyimpan data produk.",
+        toast.error("Gagal menambahkan peralatan.", {
+          description: "Terjadi kesalahan saat menyimpan data peralatan.",
         });
       }
     } finally {
@@ -114,13 +114,13 @@ export default function CreateProductPage() {
             className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 mb-4 transition-colors font-medium cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali ke Daftar Produk
+            Kembali ke Daftar Peralatan
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                Tambah Produk
+                Tambah Peralatan
               </h1>
               <p className="text-sm text-slate-500 mt-1">
                 Buat dan kelola unit peralatan outdoor baru ke dalam sistem
@@ -137,18 +137,17 @@ export default function CreateProductPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                 <h2 className="text-sm font-semibold text-slate-900 uppercase">
-                  Informasi Produk
+                  Informasi Peralatan
                 </h2>
               </div>
 
               {/* NAMA PRODUK */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700">
-                  Nama Produk <span className="text-rose-500">*</span>
+                  Nama Peralatan <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: Tenda Arpenaz 4.1 Family"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -160,11 +159,10 @@ export default function CreateProductPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
-                    Kode Produk / SKU <span className="text-rose-500">*</span>
+                    Kode Peralatan <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="PRD-001"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     required
@@ -202,7 +200,6 @@ export default function CreateProductPage() {
                   <input
                     type="number"
                     min={0}
-                    placeholder="100000"
                     value={price}
                     onChange={(e) =>
                       setPrice(
@@ -221,7 +218,6 @@ export default function CreateProductPage() {
                   <input
                     type="number"
                     min={0}
-                    placeholder="0"
                     value={stock}
                     onChange={(e) =>
                       setStock(
@@ -254,7 +250,6 @@ export default function CreateProductPage() {
                   Deskripsi <span className="text-rose-500">*</span>
                 </label>
                 <textarea
-                  placeholder="Tuliskan spesifikasi atau deskripsi rinci tentang produk..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
@@ -267,7 +262,7 @@ export default function CreateProductPage() {
             {/* FOTO PRODUK */}
             <div className="space-y-3 pt-4 border-t border-slate-100">
               <label className="text-xs font-semibold text-slate-700 block">
-                Foto Produk
+                Foto Peralatan
               </label>
 
               {imagePreview ? (
@@ -332,7 +327,7 @@ export default function CreateProductPage() {
               ) : (
                 <>
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Simpan Produk</span>
+                  <span>Simpan</span>
                 </>
               )}
             </button>

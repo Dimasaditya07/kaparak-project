@@ -65,18 +65,30 @@ function getItemDisplay(item: ReservationItem): ItemDisplay {
       name: item.product.name,
       code: item.product.code,
       imageUrl: item.product.image_url ?? null,
-      subLabel: item.product.category?.name || "Outdoor Equipment",
+      subLabel: item.product.category?.name || "Perlengkapan Outdoor",
     };
   }
 
   return {
     type: "product",
-    name: "Item tidak dikenal",
+    name: "Barang tidak dikenal",
     code: "-",
     imageUrl: null,
     subLabel: "—",
   };
 }
+
+/**
+ * Tampilan status reservasi
+ * Value tetap mengikuti backend.
+ */
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Menunggu",
+  confirmed: "Dikonfirmasi",
+  picked_up: "Sudah Diambil",
+  returned: "Dikembalikan",
+  cancelled: "Dibatalkan",
+};
 
 const STATUS_UI: Record<string, string> = {
   pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
@@ -84,6 +96,17 @@ const STATUS_UI: Record<string, string> = {
   picked_up: "bg-blue-50 text-blue-700 border-blue-200",
   returned: "bg-purple-50 text-purple-700 border-purple-200",
   cancelled: "bg-red-50 text-red-700 border-red-200",
+};
+
+/**
+ * Tampilan status pembayaran
+ * Value tetap mengikuti backend.
+ */
+const PAYMENT_LABEL: Record<string, string> = {
+  unpaid: "Belum Dibayar",
+  paid: "Sudah Dibayar",
+  failed: "Gagal",
+  refunded: "Dikembalikan",
 };
 
 const PAYMENT_UI: Record<string, string> = {
@@ -107,20 +130,26 @@ export default function ReservationDetailAdminPage() {
   const reservationId = useMemo(() => Number(params?.id), [params?.id]);
 
   const [reservation, setReservation] = useState<Reservation | null>(null);
+
   const [loading, setLoading] = useState(true);
 
-  // API PROCESS
+  // PROSES API
   const [confirming, setConfirming] = useState(false);
 
-  // RETURN FORM
+  // FORM PENGEMBALIAN
   const [showReturnForm, setShowReturnForm] = useState(false);
+
   const [drafts, setDrafts] = useState<Record<number, ConditionDraft>>({});
 
-  // VALIDATION ERROR
+  // VALIDASI ERROR
   const [error, setError] = useState<string | null>(null);
 
-  // ALERT DIALOG
+  // DIALOG KONFIRMASI
   const [dialog, setDialog] = useState<"pickup" | "return" | null>(null);
+
+  // =========================================================
+  // AMBIL DETAIL RESERVASI
+  // =========================================================
 
   useEffect(() => {
     if (!reservationId || isNaN(reservationId)) return;
@@ -157,7 +186,7 @@ export default function ReservationDetailAdminPage() {
   }, [reservationId]);
 
   // =========================================================
-  // OPEN RETURN FORM
+  // BUKA FORM PENGEMBALIAN
   // =========================================================
 
   const openReturnForm = () => {
@@ -180,7 +209,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // UPDATE RETURN CONDITION
+  // UPDATE KONDISI PENGEMBALIAN
   // =========================================================
 
   const updateDraft = (
@@ -250,7 +279,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // VALIDATE RETURN
+  // VALIDASI PENGEMBALIAN
   // =========================================================
 
   const validateReturn = () => {
@@ -263,7 +292,7 @@ export default function ReservationDetailAdminPage() {
 
       if (sum !== item.quantity) {
         setError(
-          `Total barang (${getItemDisplay(item).name}): Baik + Rusak + Hilang harus berjumlah ${item.quantity}. Saat ini: ${sum}.`,
+          `Total barang (${getItemDisplay(item).name}): jumlah Baik + Rusak + Hilang harus berjumlah ${item.quantity}. Saat ini: ${sum}.`,
         );
 
         return false;
@@ -276,7 +305,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // CLICK CONFIRM RETURN
+  // KLIK KONFIRMASI PENGEMBALIAN
   // =========================================================
 
   const handleClickConfirmReturn = () => {
@@ -290,7 +319,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // EXECUTE CONFIRM RETURN
+  // PROSES KONFIRMASI PENGEMBALIAN
   // =========================================================
 
   const handleConfirmReturn = async () => {
@@ -340,7 +369,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // CLICK PICKUP
+  // KLIK TANDAI BARANG DIAMBIL
   // =========================================================
 
   const handleClickPickup = () => {
@@ -350,7 +379,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // EXECUTE PICKUP
+  // PROSES PENGAMBILAN
   // =========================================================
 
   const handlePickup = async () => {
@@ -365,7 +394,7 @@ export default function ReservationDetailAdminPage() {
 
       setReservation(updated);
 
-      toast.success("Barang berhasil ditandai diambil", {
+      toast.success("Barang berhasil ditandai sudah diambil", {
         description:
           "Status reservasi telah diperbarui menjadi barang diambil.",
       });
@@ -373,13 +402,13 @@ export default function ReservationDetailAdminPage() {
       console.error("Gagal mengubah status pengambilan:", err);
 
       if (err instanceof AxiosError) {
-        toast.error("Gagal menandai barang diambil", {
+        toast.error("Gagal menandai barang sudah diambil", {
           description:
             err.response?.data?.message ??
             "Terjadi kesalahan saat mengubah status.",
         });
       } else {
-        toast.error("Gagal menandai barang diambil", {
+        toast.error("Gagal menandai barang sudah diambil", {
           description: "Terjadi kesalahan sistem.",
         });
       }
@@ -389,7 +418,7 @@ export default function ReservationDetailAdminPage() {
   };
 
   // =========================================================
-  // FORMAT DATE
+  // FORMAT TANGGAL
   // =========================================================
 
   const formatDate = (date: string) =>
@@ -400,7 +429,7 @@ export default function ReservationDetailAdminPage() {
     });
 
   // =========================================================
-  // OVERDUE
+  // INFORMASI KETERLAMBATAN
   // =========================================================
 
   const overdueInfo = useMemo(() => {
@@ -425,7 +454,7 @@ export default function ReservationDetailAdminPage() {
   }, [reservation]);
 
   // =========================================================
-  // LOADING
+  // MEMUAT
   // =========================================================
 
   if (loading) {
@@ -441,7 +470,7 @@ export default function ReservationDetailAdminPage() {
   }
 
   // =========================================================
-  // NOT FOUND
+  // TIDAK DITEMUKAN
   // =========================================================
 
   if (!reservation) {
@@ -473,7 +502,8 @@ export default function ReservationDetailAdminPage() {
     <>
       <div className="min-h-screen bg-slate-50 p-8 lg:p-12">
         <div className="max-w-5xl mx-auto">
-          {/* BACK BUTTON */}
+          {/* TOMBOL KEMBALI */}
+
           <button
             onClick={() => router.push("/admin/orders/reservations")}
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors"
@@ -483,9 +513,16 @@ export default function ReservationDetailAdminPage() {
           </button>
 
           {/* HEADER */}
+
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{
+              opacity: 0,
+              y: 10,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
             className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4"
           >
             <div>
@@ -499,29 +536,41 @@ export default function ReservationDetailAdminPage() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              {/* STATUS RESERVASI */}
+
               <span
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
                   STATUS_UI[reservation.status] ?? STATUS_UI.pending
                 }`}
               >
-                {reservation.status}
+                {STATUS_LABEL[reservation.status] ?? reservation.status}
               </span>
+
+              {/* STATUS PEMBAYARAN */}
 
               <span
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
                   PAYMENT_UI[reservation.payment_status] ?? PAYMENT_UI.unpaid
                 }`}
               >
-                {reservation.payment_status}
+                {PAYMENT_LABEL[reservation.payment_status] ??
+                  reservation.payment_status}
               </span>
             </div>
           </motion.div>
 
-          {/* OVERDUE */}
+          {/* INFORMASI KETERLAMBATAN */}
+
           {overdueInfo && (
             <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{
+                opacity: 0,
+                y: -6,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
               className="flex items-center gap-3 mb-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20"
             >
               <AlertTriangle size={18} className="text-red-500 shrink-0" />
@@ -555,23 +604,32 @@ export default function ReservationDetailAdminPage() {
 
           <div className="grid lg:grid-cols-3 gap-6">
             {/* ================================================= */}
-            {/* LEFT */}
+            {/* KOLOM KIRI */}
             {/* ================================================= */}
 
             <div className="lg:col-span-2 space-y-6">
-              {/* CUSTOMER & DATE */}
+              {/* PELANGGAN & TANGGAL */}
+
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{
+                  opacity: 0,
+                  y: 10,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
                 className="bg-white border border-slate-200 rounded-2xl p-6 grid sm:grid-cols-2 gap-6"
               >
+                {/* PELANGGAN */}
+
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                     <UserIcon size={16} className="text-slate-500" />
                   </div>
 
                   <div>
-                    <p className="text-xs text-slate-400 mb-0.5">Customer</p>
+                    <p className="text-xs text-slate-400 mb-0.5">Pelanggan</p>
 
                     <p className="text-sm font-semibold text-slate-800">
                       {reservation.user?.name ?? "-"}
@@ -583,8 +641,10 @@ export default function ReservationDetailAdminPage() {
                   </div>
                 </div>
 
+                {/* PERIODE SEWA */}
+
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                     <CalendarDays size={16} className="text-slate-500" />
                   </div>
 
@@ -610,11 +670,20 @@ export default function ReservationDetailAdminPage() {
                 </div>
               </motion.div>
 
-              {/* ITEMS */}
+              {/* BARANG */}
+
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
+                initial={{
+                  opacity: 0,
+                  y: 10,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: 0.05,
+                }}
                 className="bg-white border border-slate-200 rounded-2xl overflow-hidden"
               >
                 <div className="px-6 py-4 border-b border-slate-100">
@@ -626,7 +695,7 @@ export default function ReservationDetailAdminPage() {
                 <div className="divide-y divide-slate-100">
                   {items.length === 0 ? (
                     <p className="px-6 py-8 text-sm text-slate-400 text-center">
-                      Tidak ada rincian item.
+                      Tidak ada rincian barang.
                     </p>
                   ) : (
                     items.map((item) => {
@@ -636,9 +705,10 @@ export default function ReservationDetailAdminPage() {
 
                       return (
                         <div key={item.id} className="px-6 py-4">
-                          {/* ITEM HEADER */}
+                          {/* INFORMASI BARANG */}
+
                           <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-slate-100 flex items-center justify-center">
                               {display.imageUrl ? (
                                 <img
                                   src={display.imageUrl}
@@ -678,12 +748,13 @@ export default function ReservationDetailAdminPage() {
                             </div>
                           </div>
 
-                          {/* PACKAGE CONTENT */}
+                          {/* ISI PAKET */}
+
                           {item.package?.packageItems &&
                             item.package.packageItems.length > 0 && (
                               <div className="mt-4 sm:ml-18 rounded-xl border border-slate-200 bg-slate-50 p-4">
                                 <p className="text-xs font-semibold text-slate-700 mb-3">
-                                  Barang termasuk dalam paket:
+                                  Barang yang termasuk dalam paket:
                                 </p>
 
                                 <div className="space-y-3">
@@ -727,7 +798,8 @@ export default function ReservationDetailAdminPage() {
                               </div>
                             )}
 
-                          {/* CONDITION RECORDED */}
+                          {/* KONDISI BARANG */}
+
                           {hasConditionRecorded && (
                             <div className="mt-4 sm:ml-18 flex flex-wrap gap-2">
                               {item.condition_good! > 0 && (
@@ -756,7 +828,8 @@ export default function ReservationDetailAdminPage() {
                             </div>
                           )}
 
-                          {/* RETURN FORM */}
+                          {/* FORM PENGEMBALIAN */}
+
                           {showReturnForm && (
                             <div className="mt-4 sm:ml-18 rounded-xl border border-slate-200 p-4 bg-slate-50/50">
                               <p className="text-xs font-semibold text-slate-700 mb-3">
@@ -830,17 +903,26 @@ export default function ReservationDetailAdminPage() {
             </div>
 
             {/* ================================================= */}
-            {/* RIGHT COLUMN */}
+            {/* KOLOM KANAN */}
             {/* ================================================= */}
 
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              initial={{
+                opacity: 0,
+                y: 10,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                delay: 0.1,
+              }}
               className="lg:sticky lg:top-8 h-fit"
             >
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                {/* PAYMENT */}
+                {/* PEMBAYARAN */}
+
                 <div className="flex items-center gap-2 mb-5">
                   <CreditCard size={16} className="text-slate-500" />
 
@@ -859,21 +941,20 @@ export default function ReservationDetailAdminPage() {
                   </span>
                 </div>
 
-                {/* VALIDATION ERROR */}
+                {/* VALIDASI */}
+
                 {error && (
                   <div className="mt-4 p-3 rounded-lg bg-red-50 text-xs font-medium text-red-600 border border-red-100">
                     {error}
                   </div>
                 )}
 
-                {/* ================================================= */}
-                {/* CONFIRMED */}
-                {/* ================================================= */}
+                {/* STATUS DIKONFIRMASI */}
 
                 {reservation.status === "confirmed" && (
                   <div className="mt-6 pt-6 border-t border-slate-100">
                     <p className="text-xs text-slate-500 mb-3">
-                      Klik tombol berikut ketika customer sudah mengambil
+                      Klik tombol berikut ketika pelanggan sudah mengambil
                       barang.
                     </p>
 
@@ -894,16 +975,14 @@ export default function ReservationDetailAdminPage() {
                   </div>
                 )}
 
-                {/* ================================================= */}
-                {/* PICKED UP */}
-                {/* ================================================= */}
+                {/* STATUS SUDAH DIAMBIL */}
 
                 {reservation.status === "picked_up" && (
                   <div className="mt-6 pt-6 border-t border-slate-100">
                     {!showReturnForm ? (
                       <>
                         <p className="text-xs text-slate-500 mb-3">
-                          Cek kondisi tiap barang sebelum konfirmasi
+                          Periksa kondisi setiap barang sebelum mengonfirmasi
                           pengembalian.
                         </p>
 
@@ -917,8 +996,8 @@ export default function ReservationDetailAdminPage() {
                     ) : (
                       <>
                         <p className="text-xs text-slate-500 mb-3">
-                          Isi kondisi barang pada list di sebelah kiri, lalu
-                          kirim.
+                          Isi kondisi barang pada daftar di sebelah kiri,
+                          kemudian kirim.
                         </p>
 
                         <div className="flex gap-2">
@@ -953,9 +1032,7 @@ export default function ReservationDetailAdminPage() {
                   </div>
                 )}
 
-                {/* ================================================= */}
-                {/* RETURNED */}
-                {/* ================================================= */}
+                {/* STATUS SUDAH DIKEMBALIKAN */}
 
                 {reservation.status === "returned" && (
                   <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-emerald-600 font-medium text-sm">
@@ -964,9 +1041,7 @@ export default function ReservationDetailAdminPage() {
                   </div>
                 )}
 
-                {/* ================================================= */}
-                {/* CANCELLED */}
-                {/* ================================================= */}
+                {/* STATUS DIBATALKAN */}
 
                 {reservation.status === "cancelled" && (
                   <div className="mt-6 pt-6 border-t border-slate-100 text-red-500 font-medium text-sm">
@@ -980,7 +1055,7 @@ export default function ReservationDetailAdminPage() {
       </div>
 
       {/* ===================================================== */}
-      {/* ALERT DIALOG - PICKUP */}
+      {/* DIALOG KONFIRMASI - PENGAMBILAN */}
       {/* ===================================================== */}
 
       <AlertDialog
@@ -996,7 +1071,7 @@ export default function ReservationDetailAdminPage() {
             <AlertDialogTitle>Tandai Barang Sudah Diambil?</AlertDialogTitle>
 
             <AlertDialogDescription>
-              Pastikan customer sudah menerima seluruh barang yang disewa.
+              Pastikan pelanggan sudah menerima seluruh barang yang disewa.
               Setelah dikonfirmasi, status reservasi akan berubah menjadi{" "}
               <span className="font-semibold">Barang Diambil</span>.
             </AlertDialogDescription>
@@ -1024,7 +1099,7 @@ export default function ReservationDetailAdminPage() {
       </AlertDialog>
 
       {/* ===================================================== */}
-      {/* ALERT DIALOG - RETURN */}
+      {/* DIALOG KONFIRMASI - PENGEMBALIAN */}
       {/* ===================================================== */}
 
       <AlertDialog

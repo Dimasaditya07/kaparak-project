@@ -73,7 +73,7 @@ export default function CreatePackagePage() {
     const exists = packageItems.find((item) => item.product_id === product.id);
 
     if (exists) {
-      toast.warning("Produk sudah ada di dalam paket.");
+      toast.warning("Peralatan sudah ada di dalam paket.");
       return;
     }
 
@@ -117,7 +117,7 @@ export default function CreatePackagePage() {
 
   const handleSubmit = async () => {
     if (packageItems.length === 0) {
-      toast.warning("Minimal tambahkan 1 produk ke paket.");
+      toast.warning("Minimal tambahkan 1 Peralatan ke paket.");
       return;
     }
 
@@ -177,7 +177,7 @@ export default function CreatePackagePage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                Tambah Package
+                Tambah Paket
               </h1>
               <p className="text-sm text-slate-500 mt-1">
                 Buat dan kelola paket bundling perlengkapan outdoor baru.
@@ -205,7 +205,6 @@ export default function CreatePackagePage() {
                     name="code"
                     value={form.code}
                     onChange={handleChange}
-                    placeholder="e.g. PKT-001"
                     className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
                   />
                 </div>
@@ -219,7 +218,6 @@ export default function CreatePackagePage() {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    placeholder="e.g. Camping Family Basic"
                     className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
                   />
                 </div>
@@ -235,8 +233,7 @@ export default function CreatePackagePage() {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Tuliskan deskripsi lengkap mengenai paket bundling ini..."
-                  className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
+                  className="flex min-h-20 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
                 />
               </div>
 
@@ -251,7 +248,6 @@ export default function CreatePackagePage() {
                     type="number"
                     value={form.package_price}
                     onChange={handleChange}
-                    placeholder="150000"
                     className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
                   />
                 </div>
@@ -279,7 +275,7 @@ export default function CreatePackagePage() {
                   Gambar Paket
                 </label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-200 bg-white shadow-sm hover:bg-slate-100 h-9 px-4 py-2 transition-colors">
+                  <label className="items-center gap-2 cursor-pointer inline-flex justify-center rounded-md text-sm font-medium border border-slate-200 bg-white shadow-sm hover:bg-slate-100 h-9 px-4 py-2 transition-colors">
                     <Upload className="w-4 h-4 text-slate-500" />
                     <span>Upload Foto</span>
                     <input
@@ -327,7 +323,7 @@ export default function CreatePackagePage() {
                     onChange={(e) => setSelectedProduct(e.target.value)}
                     className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
                   >
-                    <option value="">Pilih Item Equipment</option>
+                    <option value="">Pilih Peralatan</option>
                     {products.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name} (Rp{" "}

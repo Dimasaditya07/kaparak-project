@@ -41,25 +41,25 @@ export default function AdminDashboard() {
   const stats = data
     ? [
         {
-          title: "Total Equipment",
+          title: "Total Peralatan",
           value: data.stats.total_equipment.toString(),
-          desc: "Inventory aktif",
+          desc: "Peralatan yang tersedia",
           icon: Package,
         },
         {
-          title: "Active Rentals",
+          title: "Rental Aktif",
           value: data.stats.active_rentals.toString(),
           desc: "Sedang dipinjam",
           icon: ShoppingCart,
         },
         {
-          title: "Pending Issues",
+          title: "Masalah Tertunda",
           value: data.stats.pending_issues.toString(),
           desc: "Perlu tindakan",
           icon: AlertTriangle,
         },
         {
-          title: "Revenue",
+          title: "Pendapatan",
           value: formatRupiah(data.stats.revenue),
           desc: "Bulan ini",
           icon: Wallet,
@@ -70,20 +70,16 @@ export default function AdminDashboard() {
   const summaryItems = data
     ? [
         {
-          label: "Available Equipment",
+          label: "Peralatan Tersedia",
           value: data.summary.available_equipment.toString(),
         },
         {
-          label: "Pending Approval",
+          label: "Tertunda",
           value: data.summary.pending_approval.toString(),
         },
         {
-          label: "Finished Rentals",
+          label: "Rental Selesai",
           value: data.summary.finished_rentals.toString(),
-        },
-        {
-          label: "Total Customers",
-          value: data.summary.total_customers.toString(),
         },
       ]
     : [];
@@ -95,7 +91,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* BREADCRUMB & HEADER */}
         <div className="space-y-3">
-          <nav className="flex items-center space-x-2 text-xs text-muted-foreground text-slate-500">
+          <nav className="flex items-center space-x-2 text-xs text-slate-500">
             <span className="flex items-center gap-1 hover:text-slate-900 transition-colors cursor-pointer">
               <Home className="w-3.5 h-3.5" />
               <span>Admin</span>
@@ -110,7 +106,7 @@ export default function AdminDashboard() {
                 Dashboard
               </h1>
               <p className="text-sm text-slate-500 mt-1">
-                Overview sistem rental equipment dan performa bulan ini.
+                Ringkasan sistem rental equipment dan performa bulan ini.
               </p>
             </div>
           </div>
@@ -161,7 +157,7 @@ export default function AdminDashboard() {
             <div className="flex flex-row items-center justify-between p-6 pb-4 border-b border-slate-100">
               <div className="space-y-1">
                 <h3 className="font-semibold leading-none tracking-tight text-lg">
-                  Recent Activity
+                  Aktifitas Terbaru
                 </h3>
                 <p className="text-sm text-slate-500">
                   Transaksi rental terbaru yang baru diselesaikan
@@ -172,7 +168,7 @@ export default function AdminDashboard() {
                 onClick={() => router.push("/admin/orders/reservations")}
                 className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 hover:bg-slate-100 hover:text-slate-900 h-9 px-3 py-2"
               >
-                View all
+                Lihat Semua
               </button>
             </div>
 
@@ -206,7 +202,7 @@ export default function AdminDashboard() {
                           {act.item}
                         </p>
                         <p className="text-xs text-slate-500 mt-1">
-                          by {act.user}
+                          {act.user}
                         </p>
                       </div>
                     </div>
@@ -226,7 +222,7 @@ export default function AdminDashboard() {
               <div className="flex items-center space-x-2 border-b border-slate-100 pb-4">
                 <Clock className="w-4 h-4 text-slate-500" />
                 <h3 className="font-semibold leading-none tracking-tight text-lg">
-                  Quick Summary
+                  Ringkasan Cepat
                 </h3>
               </div>
 

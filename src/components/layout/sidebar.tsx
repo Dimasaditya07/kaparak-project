@@ -54,7 +54,7 @@ export default function Sidebar() {
   return (
     <aside
       ref={sidebarRef}
-      className="w-72 h-screen bg-[#050505] border-r border-[#050505] p-5 flex flex-col"
+      className="sticky top-0 w-72 h-screen bg-[#050505] border-r border-[#050505] p-5 flex flex-col shrink-0"
     >
       {/* LOGO */}
       <div className="pt-10 pb-12 flex justify-center">
@@ -72,7 +72,7 @@ export default function Sidebar() {
       </div>
 
       {/* NAVIGATION */}
-      <nav className="bg-[#050505] px-3 py-4 flex flex-col justify-between shadow-[0_0_40px_rgba(0,0,0,0.45)]">
+      <nav className="bg-[#050505] px-3 py-4 flex flex-col justify-between shadow-[0_0_40px_rgba(0,0,0,0.45)] flex-1 overflow-y-auto">
         {/* MENU */}
         <div className="flex flex-col gap-1">
           {adminNavItems.map((item) => {
@@ -189,7 +189,7 @@ export default function Sidebar() {
                   />
                 </svg>
 
-                <span className="text-sm font-medium">Logout</span>
+                <span className="text-sm font-medium">Keluar</span>
               </button>
             </AlertDialogTrigger>
 

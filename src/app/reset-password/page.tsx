@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
       }, 1200);
     } catch (err) {
       const axiosErr = err as AxiosError<{ message?: string }>;
-      setError(axiosErr.response?.data?.message ?? "Reset password gagal.");
+      setError(axiosErr.response?.data?.message ?? "Gagal Mengatur Ulang Kata Sandi.");
     } finally {
       setLoading(false);
     }
@@ -111,6 +111,7 @@ export default function ResetPasswordPage() {
 
           <div className="p-9">
             {/* EYEBROW */}
+            {/* EYEBROW */}
             <div className="flex items-center gap-3 mb-5">
               <div
                 className="w-1.5 h-6 rounded-full"
@@ -123,7 +124,7 @@ export default function ResetPasswordPage() {
                 className="text-[10px] font-bold uppercase tracking-[0.35em]"
                 style={{ color: "#4ade80" }}
               >
-                Account Recovery
+                Pemulihan Akun
               </span>
             </div>
 
@@ -132,7 +133,7 @@ export default function ResetPasswordPage() {
               className="font-black uppercase italic leading-[0.9] mb-3"
               style={{ fontSize: "clamp(2rem, 6vw, 2.5rem)" }}
             >
-              Reset
+              Atur Ulang
               <br />
               <span
                 style={{
@@ -140,7 +141,7 @@ export default function ResetPasswordPage() {
                   color: "transparent",
                 }}
               >
-                Password
+                Kata Sandi
               </span>
             </h1>
 
@@ -148,7 +149,7 @@ export default function ResetPasswordPage() {
               className="text-sm mb-8"
               style={{ color: "rgba(255,255,255,0.4)" }}
             >
-              Buat password baru untuk akun KAPARAK Anda.
+              Buat kata sandi baru untuk akun KAPARAK Anda.
             </p>
 
             <AnimatePresence mode="wait">
@@ -182,8 +183,9 @@ export default function ResetPasswordPage() {
                     </svg>
                   </div>
                   <p className="font-bold text-lg mb-1">
-                    Password Berhasil Diperbarui
+                    Kata Sandi Berhasil Diperbarui
                   </p>
+
                   <p
                     className="text-sm"
                     style={{ color: "rgba(255,255,255,0.4)" }}
@@ -226,7 +228,7 @@ export default function ResetPasswordPage() {
                       className="block text-[10px] font-bold uppercase tracking-[0.25em] mb-2"
                       style={{ color: "rgba(255,255,255,0.3)" }}
                     >
-                      Password Baru
+                      Kata Sandi Baru
                     </label>
                     <div className="relative">
                       <input
@@ -305,7 +307,7 @@ export default function ResetPasswordPage() {
                       className="block text-[10px] font-bold uppercase tracking-[0.25em] mb-2"
                       style={{ color: "rgba(255,255,255,0.3)" }}
                     >
-                      Konfirmasi Password
+                      Konfirmasi Kata Sandi
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
@@ -374,7 +376,7 @@ export default function ResetPasswordPage() {
                       />
                     )}
                     <span className="relative">
-                      {loading ? "Menyimpan..." : "Reset Password"}
+                      {loading ? "Menyimpan Kata Sandi..." : "Atur Ulang Kata Sandi"}
                     </span>
                   </button>
                 </motion.form>
@@ -386,7 +388,7 @@ export default function ResetPasswordPage() {
                 className="text-center text-xs mt-6"
                 style={{ color: "rgba(255,255,255,0.25)" }}
               >
-                Sudah ingat password?{" "}
+                Sudah ingat Kata Sandi?{" "}
                 <a
                   href="/login"
                   className="font-medium"
