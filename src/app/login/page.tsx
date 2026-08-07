@@ -3,14 +3,14 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { UserIcon } from "@/components/icons/UserIcon";
-import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
+import { UserIcon } from "@/components/icons/UserIcon";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -93,7 +93,41 @@ export default function LoginPage() {
 
   return (
     <main className="relative min-h-screen w-full flex items-center justify-center p-4 md:p-8 overflow-hidden bg-black font-sans">
-      {/* --- BACKGROUND IMAGE & OVERLAY --- */}
+      {/* BACK TO HOME */}
+      <motion.div
+        initial={{ opacity: 0, x: -15 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="absolute top-6 left-6 md:top-8 md:left-8 z-30"
+      >
+        <Link
+          href="/"
+          className="group flex items-center gap-3 px-4 py-2.5 rounded-full backdrop-blur-xl transition-all duration-300"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            color: "rgba(255,255,255,0.7)",
+          }}
+        >
+          <span
+            className="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-300 group-hover:-translate-x-0.5"
+            style={{
+              background: "rgba(74,222,128,0.1)",
+              border: "1px solid rgba(74,222,128,0.2)",
+            }}
+          >
+            <ArrowLeft
+              size={14}
+              className="transition-transform duration-300 group-hover:-translate-x-0.5"
+              style={{ color: "#4ade80" }}
+            />
+          </span>
+
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+            Kembali ke Home
+          </span>
+        </Link>
+      </motion.div>
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/bgkaparak2.jpg"
