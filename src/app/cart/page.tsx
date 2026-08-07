@@ -16,7 +16,7 @@ import { CartItem } from "@/lib/query/carts.model";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPendingPayment } from "@/lib/query/checkout";
 import { PendingPayment } from "@/lib/query/checkout.model";
-
+import { toast } from "sonner";
 
 type CartItemDisplay = {
   type: "product" | "package";
@@ -119,16 +119,33 @@ export default function CartPage() {
     }
     fetchCart();
     fetchPendingPayment();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, token]);
 
   const handleRemove = async (id: number) => {
+    const item = cartItems.find((item) => item.id === id);
+    const display = item ? getCartItemDisplay(item) : null;
+
     setRemovingId(id);
+
     try {
       await axiosInstance.delete(`/cart/${id}`);
+
       setCartItems((prev) => prev.filter((item) => item.id !== id));
+
+      toast.success("Item berhasil dihapus", {
+        description: display
+          ? `${display.name} telah dihapus dari keranjang.`
+          : "Item telah dihapus dari keranjang.",
+        duration: 3000,
+      });
     } catch (error) {
-      console.error(error);
+      console.error("REMOVE CART ERROR", error);
+
+      toast.error("Gagal menghapus item", {
+        description:
+          "Terjadi kesalahan saat menghapus item dari keranjang. Silakan coba lagi.",
+        duration: 4000,
+      });
     } finally {
       setRemovingId(null);
     }

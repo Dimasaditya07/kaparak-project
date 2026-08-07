@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
+  const router = useRouter();
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -45,7 +47,9 @@ export default function Hero() {
           >
             KAPARAK
             <br />
-            <span className="text-transparent stroke-text font-mono">OUTDOOR</span>
+            <span className="text-transparent stroke-text font-mono">
+              OUTDOOR
+            </span>
           </motion.h1>
 
           <motion.p
@@ -64,7 +68,10 @@ export default function Hero() {
             transition={{ delay: 0.8 }}
             className="mt-10"
           >
-            <button className="group relative flex items-center gap-0 overflow-hidden font-sans text-[11px] font-bold uppercase tracking-[0.2em]">
+            <button
+              onClick={() => router.push("/product")}
+              className="group relative flex items-center gap-0 overflow-hidden font-sans text-[11px] font-bold uppercase tracking-[0.2em]"
+            >
               {/* BAGIAN UTAMA TOMBOL */}
               <span className="relative z-10 border border-white/20 bg-white/5 px-8 py-4 text-white backdrop-blur-sm transition-all duration-500 group-hover:border-primary group-hover:bg-primary">
                 Lihat Peralatan
@@ -88,8 +95,8 @@ export default function Hero() {
                 </svg>
               </span>
 
-              {/* EFEK FLAR SAAT HOVER */}
-              <div className="absolute inset-0 z-0 h-full w-full translate-x-full bg-linear-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full"></div>
+              {/* EFEK FLARE SAAT HOVER */}
+              <div className="absolute inset-0 z-0 h-full w-full -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
             </button>
           </motion.div>
         </div>

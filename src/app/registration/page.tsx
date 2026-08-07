@@ -272,30 +272,6 @@ export default function RegisterPage() {
                 </motion.div>
               </div>
 
-              {/* TERMS CHECKBOX */}
-              <motion.div
-                variants={itemVariants}
-                className="flex items-center gap-3 pt-2 pb-1 pl-1"
-              >
-                <input
-                  type="checkbox"
-                  id="terms"
-                  className="w-4 h-4 accent-green-600 bg-white/10 border-white/20 rounded cursor-pointer"
-                />
-                <label
-                  htmlFor="terms"
-                  className="font-mono text-[9px] text-gray-300 uppercase tracking-widest cursor-pointer"
-                >
-                  I agree to the{" "}
-                  <Link
-                    href="#"
-                    className="text-white border-b border-green-500 hover:text-green-500 transition-colors"
-                  >
-                    Terms & Conditions
-                  </Link>
-                </label>
-              </motion.div>
-
               {/* BUTTON REGISTER */}
               <motion.button
                 variants={itemVariants}
@@ -304,30 +280,6 @@ export default function RegisterPage() {
                 className="w-full bg-green-600 text-white font-black uppercase tracking-[0.3em] text-[11px] py-4 mt-2 rounded-2xl shadow-xl hover:bg-white hover:text-black transition-all"
               >
                 Create Account
-              </motion.button>
-
-              {/* DIVIDER */}
-              <motion.div
-                variants={itemVariants}
-                className="relative flex items-center gap-4 py-2"
-              >
-                <div className="grow h-px bg-white/10"></div>
-                <span className="font-mono text-[10px] text-white/30 uppercase tracking-widest">
-                  or
-                </span>
-                <div className="grow h-px bg-white/10"></div>
-              </motion.div>
-
-              {/* GOOGLE SIGN IN */}
-              <motion.button
-                type="button"
-                variants={itemVariants}
-                whileHover={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-                onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-white font-mono text-[10px] uppercase tracking-widest py-4 rounded-2xl transition-all"
-              >
-                <GoogleIcon className="w-5 h-5" />
-                Sign in with Google
               </motion.button>
             </form>
 

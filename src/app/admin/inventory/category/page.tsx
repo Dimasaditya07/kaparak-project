@@ -10,9 +10,19 @@ import {
   X,
   Loader2,
   CheckCircle2,
-  Sparkles,
 } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import {
   getCategories,
@@ -37,6 +47,12 @@ export default function CategoryPage() {
   // FORM
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState<CategoryItem | null>(
+    null,
+  );
+
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -85,20 +101,31 @@ export default function CategoryPage() {
     try {
       if (isEdit && selectedId) {
         await updateCategory(selectedId, { name, slug });
+        toast.success("Kategori berhasil diperbarui.", {
+          description: `"${name}" telah diperbarui.`,
+        });
       } else {
         await createCategory({ name, slug });
+        toast.success("Kategori berhasil ditambahkan.", {
+          description: `"${name}" telah ditambahkan ke daftar kategori.`,
+        });
       }
       await fetchCategories();
       resetForm();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error(error.response?.data);
-        alert(
-          error.response?.data?.message || "Terjadi kesalahan pada server.",
-        );
+
+        toast.error("Gagal menyimpan kategori.", {
+          description:
+            error.response?.data?.message || "Terjadi kesalahan pada server.",
+        });
       } else {
         console.error(error);
-        alert("Gagal menyimpan data kategori.");
+
+        toast.error("Gagal menyimpan kategori.", {
+          description: "Terjadi kesalahan saat menyimpan data.",
+        });
       }
     } finally {
       setSubmitting(false);
@@ -115,16 +142,28 @@ export default function CategoryPage() {
   }
 
   // DELETE
-  async function handleDelete(id: number) {
-    const confirmDelete = confirm("Yakin ingin menghapus kategori ini?");
-    if (!confirmDelete) return;
+  async function handleDelete() {
+    if (!selectedCategory) return;
+
+    setDeleting(true);
 
     try {
-      await deleteCategory(id);
+      await deleteCategory(selectedCategory.id);
+
+      toast.success("Kategori berhasil dihapus.", {
+        description: `"${selectedCategory.name}" telah dihapus dari daftar kategori.`,
+      });
+
+      setSelectedCategory(null);
       await fetchCategories();
     } catch (error) {
       console.error(error);
-      alert("Gagal menghapus kategori.");
+
+      toast.error("Gagal menghapus kategori.", {
+        description: "Terjadi kesalahan saat menghapus data kategori.",
+      });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -264,8 +303,8 @@ export default function CategoryPage() {
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(item.id)}
-                            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                            onClick={() => setSelectedCategory(item)}
+                            className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             title="Hapus Kategori"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -388,6 +427,42 @@ export default function CategoryPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* DELETE CONFIRMATION */}
+      <AlertDialog
+        open={!!selectedCategory}
+        onOpenChange={(open) => {
+          if (!open && !deleting) {
+            setSelectedCategory(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus kategori?</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              Yakin ingin menghapus kategori{" "}
+              <span className="font-semibold text-slate-700">
+                &quot;{selectedCategory?.name}&quot;
+              </span>
+              ? Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+            >
+              {deleting ? "Menghapus..." : "Hapus Kategori"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

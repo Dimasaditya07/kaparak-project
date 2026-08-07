@@ -5,14 +5,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Package, Plus, Edit, Trash2, Boxes } from "lucide-react";
-
 import { getProducts, deleteProduct } from "@/lib/query/product";
 import { ProductItem } from "@/lib/query/product.model";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ProductPage() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(
+    null,
+  );
+
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -30,16 +45,28 @@ export default function ProductPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    const confirmDelete = confirm("Yakin ingin menghapus produk ini?");
-    if (!confirmDelete) return;
+  async function handleDelete() {
+    if (!selectedProduct) return;
+
+    setDeleting(true);
 
     try {
-      await deleteProduct(id);
+      await deleteProduct(selectedProduct.id);
+
+      toast.success("Produk berhasil dihapus.", {
+        description: `"${selectedProduct.name}" telah dihapus dari inventaris.`,
+      });
+
+      setSelectedProduct(null);
       await fetchProducts();
     } catch (error) {
       console.error(error);
-      alert("Gagal menghapus produk.");
+
+      toast.error("Gagal menghapus produk.", {
+        description: "Terjadi kesalahan saat menghapus data produk.",
+      });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -235,7 +262,7 @@ export default function ProductPage() {
 
                           {/* DELETE BUTTON */}
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => setSelectedProduct(item)}
                             className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             title="Hapus Produk"
                           >
@@ -250,6 +277,41 @@ export default function ProductPage() {
             </table>
           </div>
         </div>
+        {/* DELETE CONFIRMATION */}
+        <AlertDialog
+          open={!!selectedProduct}
+          onOpenChange={(open) => {
+            if (!open && !deleting) {
+              setSelectedProduct(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Hapus produk?</AlertDialogTitle>
+
+              <AlertDialogDescription>
+                Yakin ingin menghapus produk{" "}
+                <span className="font-semibold text-slate-700">
+                  &quot;{selectedProduct?.name}&quot;
+                </span>
+                ? Tindakan ini tidak dapat dibatalkan.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
+
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-rose-600 hover:bg-rose-700 text-white"
+              >
+                {deleting ? "Menghapus..." : "Hapus Produk"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

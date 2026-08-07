@@ -18,6 +18,18 @@ import {
 
 import { getPackage, deletePackage } from "@/lib/query/package";
 import { PackageItem, PackageProduct } from "@/lib/query/package.model";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function PackageDetailAdminPage() {
   const router = useRouter();
@@ -58,18 +70,24 @@ export default function PackageDetailAdminPage() {
 
   const handleDelete = async () => {
     if (!pkg) return;
-    const confirmDelete = confirm(
-      `Yakin ingin menghapus paket "${pkg.name}"? Tindakan ini tidak bisa dibatalkan.`,
-    );
-    if (!confirmDelete) return;
 
     setDeleting(true);
+
     try {
       await deletePackage(pkg.id);
+
+      toast.success("Paket berhasil dihapus.", {
+        description: `"${pkg.name}" telah dihapus dari daftar paket.`,
+      });
+
       router.push("/admin/inventory/package");
     } catch (error) {
       console.error(error);
-      alert("Gagal menghapus paket.");
+
+      toast.error("Gagal menghapus paket.", {
+        description: "Terjadi kesalahan saat menghapus data paket.",
+      });
+
       setDeleting(false);
     }
   };
@@ -172,7 +190,7 @@ export default function PackageDetailAdminPage() {
               {/* EDIT BUTTON */}
               <button
                 onClick={() =>
-                  router.push(`/admin/inventory/package/edit/${pkg.id}`)
+                  router.push(`/admin/inventory/package/${pkg.id}/edit`)
                 }
                 className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
                 title="Edit data paket"
@@ -182,15 +200,55 @@ export default function PackageDetailAdminPage() {
               </button>
 
               {/* DELETE BUTTON */}
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-white px-3 py-1.5 text-sm font-medium text-rose-600 shadow-sm hover:bg-rose-50 transition-colors disabled:opacity-50"
-                title="Hapus paket"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>{deleting ? "Menghapus..." : "Hapus"}</span>
-              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    disabled={deleting}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-white px-3 py-1.5 text-sm font-medium text-rose-600 shadow-sm hover:bg-rose-50 transition-colors disabled:opacity-50"
+                    title="Hapus paket"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>{deleting ? "Menghapus..." : "Hapus"}</span>
+                  </button>
+                </AlertDialogTrigger>
+
+                <AlertDialogContent className="sm:max-w-md">
+                  <AlertDialogHeader>
+                    <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center mb-2">
+                      <Trash2 className="w-5 h-5 text-rose-600" />
+                    </div>
+
+                    <AlertDialogTitle className="text-slate-900">
+                      Hapus paket?
+                    </AlertDialogTitle>
+
+                    <AlertDialogDescription className="text-slate-500 leading-relaxed">
+                      Yakin ingin menghapus paket{" "}
+                      <span className="font-semibold text-slate-700">
+                        &quot;{pkg.name}&quot;
+                      </span>
+                      ? Tindakan ini tidak dapat dibatalkan.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+
+                  <AlertDialogFooter className="gap-2 sm:gap-2">
+                    <AlertDialogCancel
+                      disabled={deleting}
+                      className="border-slate-200 text-slate-700 hover:bg-slate-50"
+                    >
+                      Batal
+                    </AlertDialogCancel>
+
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      className="bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-600"
+                    >
+                      {deleting ? "Menghapus..." : "Hapus Paket"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </motion.div>
         </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -13,6 +14,7 @@ import {
 import { getProducts } from "@/lib/query/product";
 import { ProductItem } from "@/lib/query/product.model";
 import { createPackage } from "@/lib/query/package";
+import { toast } from "sonner";
 
 type PackageFormItem = {
   product_id: number;
@@ -71,7 +73,7 @@ export default function CreatePackagePage() {
     const exists = packageItems.find((item) => item.product_id === product.id);
 
     if (exists) {
-      alert("Produk sudah dipilih");
+      toast.warning("Produk sudah ada di dalam paket.");
       return;
     }
 
@@ -115,12 +117,12 @@ export default function CreatePackagePage() {
 
   const handleSubmit = async () => {
     if (packageItems.length === 0) {
-      alert("Minimal pilih 1 produk");
+      toast.warning("Minimal tambahkan 1 produk ke paket.");
       return;
     }
 
     if (!form.code || !form.name || !form.package_price) {
-      alert("Lengkapi kode, nama, dan harga paket terlebih dahulu");
+      toast.warning("Lengkapi data paket terlebih dahulu.");
       return;
     }
 
@@ -141,10 +143,16 @@ export default function CreatePackagePage() {
 
     try {
       await createPackage(payload);
+      toast.success("Paket berhasil dibuat.");
       router.push("/admin/inventory/package");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Gagal menyimpan package");
+
+      const message =
+        error.response?.data?.message ??
+        "Terjadi kesalahan saat menyimpan paket.";
+
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

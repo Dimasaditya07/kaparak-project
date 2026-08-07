@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -20,6 +21,7 @@ import { getProducts } from "@/lib/query/product";
 import { ProductItem } from "@/lib/query/product.model";
 import { getPackage, updatePackage } from "@/lib/query/package";
 import { PackageItem } from "@/lib/query/package.model";
+import { toast } from "sonner";
 
 type PackageFormItem = {
   product_id: number;
@@ -116,7 +118,7 @@ export default function EditPackagePage() {
     const exists = packageItems.find((item) => item.product_id === product.id);
 
     if (exists) {
-      alert("Produk sudah ada di dalam paket ini.");
+      toast.warning("Produk sudah ada di dalam paket.");
       return;
     }
 
@@ -162,12 +164,12 @@ export default function EditPackagePage() {
     if (!pkg) return;
 
     if (packageItems.length === 0) {
-      alert("Minimal pilih 1 produk untuk paket ini.");
+      toast.warning("Minimal pilih 1 produk untuk paket ini.");
       return;
     }
 
     if (!form.code || !form.name || !form.package_price) {
-      alert("Lengkapi kode, nama, dan harga paket terlebih dahulu.");
+      toast.error("Lengkapi kode, nama, dan harga paket terlebih dahulu.");
       return;
     }
 
@@ -188,10 +190,14 @@ export default function EditPackagePage() {
 
     try {
       await updatePackage(pkg.id, payload);
+      toast.success("Paket berhasil diperbarui.");
       router.push("/admin/inventory/package");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Gagal mengoperasikan pembaruan paket.");
+      const message =
+        error.response?.data?.message ??
+        "Terjadi kesalahan saat menyimpan paket.";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

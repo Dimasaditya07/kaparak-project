@@ -8,6 +8,8 @@ import { useEffect, useState, useRef } from "react";
 import { UserIcon } from "@/components/icons/UserIcon";
 import { useRouter, usePathname } from "next/navigation";
 import { CartIcon } from "@/components/icons/CartIcon";
+import { toast } from "sonner";
+import { KaparakAlertDialog } from "@/components/ui/kaparak-alert-dialog";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -17,6 +19,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -84,8 +87,17 @@ export default function Navbar() {
 
     setIsLoggedIn(false);
     setUserName("");
+    setCartCount(0);
+    setShowDropdown(false);
+    setShowLogoutDialog(false);
 
-    router.push("/");
+    toast.success("Logout berhasil", {
+      description: "Kamu telah berhasil keluar dari akun.",
+    });
+
+    setTimeout(() => {
+      router.push("/");
+    }, 500);
   };
 
   return (
@@ -205,11 +217,11 @@ export default function Navbar() {
                 </Link>
 
                 <button
-                  onClick={handleLogout}
+                  onClick={() => setShowLogoutDialog(true)}
                   className="font-mono text-[10px] uppercase tracking-widest font-bold text-gray-500 hover:text-red-500 transition-colors relative group"
                 >
                   Logout
-                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-red-500 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-red-500 transition-all duration-300 group-hover:w-full" />
                 </button>
               </div>
             </div>
@@ -232,6 +244,16 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      <KaparakAlertDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        title="Keluar dari akun?"
+        description="Apakah kamu yakin ingin keluar dari akun KAPARAK?"
+        cancelText="Tetap di sini"
+        actionText="Logout"
+        onAction={handleLogout}
+        destructive
+      />
     </nav>
   );
 }

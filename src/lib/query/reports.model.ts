@@ -11,6 +11,14 @@ export interface LatestTransaction {
   total: number;
 }
 
+export interface MonthlyReportDetail {
+  month: string;
+  year: number;
+  total_revenue: number;
+  total_transactions: number;
+  transactions: LatestTransaction[];
+}
+
 export interface ReportsSummary {
   total_revenue: number;
   total_reservations: number;

@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,11 +42,18 @@ export default function LoginPage() {
       localStorage.setItem("name", name);
       localStorage.setItem("role", role);
 
-      if (role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
+      toast.success("Login berhasil!", {
+        description: `Selamat datang kembali, ${name}.`,
+      });
+
+      // Beri sedikit waktu agar toast terlihat
+      setTimeout(() => {
+        if (role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
+      }, 500);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
 
@@ -53,21 +61,25 @@ export default function LoginPage() {
         error.response?.status === 403 &&
         error.response.data?.message === "Email belum diverifikasi."
       ) {
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        toast.warning("Email belum diverifikasi", {
+          description: "Silakan verifikasi email terlebih dahulu.",
+        });
+
+        setTimeout(() => {
+          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        }, 500);
+
         return;
       }
 
-      alert(
-        error.response?.data?.message ??
-          "Login gagal! Pastikan server menyala.",
-      );
+      toast.error("Login gagal", {
+        description:
+          error.response?.data?.message ??
+          "Pastikan email dan password yang kamu masukkan benar.",
+      });
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   const itemVariants = {
@@ -227,34 +239,10 @@ export default function LoginPage() {
               >
                 Sign In
               </motion.button>
-
-              {/* DIVIDER */}
-              <motion.div
-                variants={itemVariants}
-                className="relative flex items-center gap-4 py-2"
-              >
-                <div className="grow h-px bg-white/10"></div>
-                <span className="font-mono text-[10px] text-white/30 uppercase tracking-widest">
-                  or
-                </span>
-                <div className="grow h-px bg-white/10"></div>
-              </motion.div>
-
-              {/* GOOGLE SIGN IN */}
-              <motion.button
-                type="button"
-                variants={itemVariants}
-                whileHover={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-                onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-white font-mono text-[10px] uppercase tracking-widest py-4 rounded-2xl transition-all"
-              >
-                <GoogleIcon className="w-5 h-5" />
-                Sign in with Google
-              </motion.button>
             </form>
             {verified && (
               <div className="mb-5 rounded-xl bg-green-500/15 border border-green-500/30 p-4 text-sm text-green-200">
-                ✅ Email berhasil diverifikasi. Silakan login.
+                Email berhasil diverifikasi. Silakan login.
               </div>
             )}
             {/* REGISTER LINK */}

@@ -7,11 +7,28 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getPackages, deletePackage } from "@/lib/query/package";
 import { PackageItem } from "@/lib/query/package.model";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function PackagePage() {
   const router = useRouter();
   const [packages, setPackages] = useState<PackageItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(
+    null,
+  );
+
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchPackages();
@@ -28,15 +45,28 @@ export default function PackagePage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    const confirmDelete = confirm("Yakin ingin menghapus paket?");
-    if (!confirmDelete) return;
+  async function handleDelete() {
+    if (!selectedPackage) return;
+
+    setDeleting(true);
 
     try {
-      await deletePackage(id);
-      fetchPackages();
+      await deletePackage(selectedPackage.id);
+
+      toast.success("Paket berhasil dihapus.", {
+        description: `"${selectedPackage.name}" telah dihapus dari daftar paket.`,
+      });
+
+      setSelectedPackage(null);
+      await fetchPackages();
     } catch (error) {
-      console.log(error);
+      console.error(error);
+
+      toast.error("Gagal menghapus paket.", {
+        description: "Terjadi kesalahan saat menghapus data paket.",
+      });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -217,13 +247,47 @@ export default function PackagePage() {
                           </button>
 
                           {/* Delete Button */}
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            title="Hapus"
-                            className="inline-flex items-center justify-center rounded-md p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors focus-visible:outline-none"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                onClick={() => setSelectedPackage(item)}
+                                title="Hapus"
+                                className="inline-flex items-center justify-center rounded-md p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors focus-visible:outline-none"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </AlertDialogTrigger>
+
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Hapus paket?
+                                </AlertDialogTitle>
+
+                                <AlertDialogDescription>
+                                  Yakin ingin menghapus paket{" "}
+                                  <span className="font-semibold text-slate-700">
+                                    &quot;{item.name}&quot;
+                                  </span>
+                                  ? Tindakan ini tidak dapat dibatalkan.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+
+                              <AlertDialogFooter>
+                                <AlertDialogCancel disabled={deleting}>
+                                  Batal
+                                </AlertDialogCancel>
+
+                                <AlertDialogAction
+                                  onClick={handleDelete}
+                                  disabled={deleting}
+                                  className="bg-rose-600 hover:bg-rose-700 text-white"
+                                >
+                                  {deleting ? "Menghapus..." : "Hapus Paket"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </td>
                     </motion.tr>

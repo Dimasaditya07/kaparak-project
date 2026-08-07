@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 
 import { getProducts, updateProduct } from "@/lib/query/product";
 import { getCategories } from "@/lib/query/category";
@@ -46,8 +47,19 @@ export default function EditProductPage() {
     }
   }, [id]);
 
+  // CLEANUP IMAGE PREVIEW
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  // GET DATA
   async function initData() {
     setLoading(true);
+
     try {
       const [resCategories, resProducts] = await Promise.all([
         getCategories(),
@@ -70,37 +82,63 @@ export default function EditProductPage() {
         setStatus(targetProduct.status);
         setExistingImageUrl(targetProduct.image_url ?? null);
       } else {
-        alert("Produk tidak ditemukan!");
+        toast.error("Produk tidak ditemukan.");
         router.push("/admin/inventory/product");
       }
     } catch (error) {
       console.error("Gagal memuat data produk:", error);
+
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message || "Gagal memuat data produk.",
+        );
+      } else {
+        toast.error("Gagal memuat data produk.");
+      }
     } finally {
       setLoading(false);
     }
   }
 
-  // HANDLE IMAGE PREVIEW
+  // HANDLE IMAGE CHANGE
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+
       setImage(file);
+
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+
       setImagePreview(URL.createObjectURL(file));
     }
   }
 
+  // REMOVE NEW IMAGE
   function handleRemoveNewImage() {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
     setImage(null);
     setImagePreview(null);
   }
 
+  // SUBMIT UPDATE
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!id) return;
+
+    if (!id) {
+      toast.error("ID produk tidak valid.");
+      return;
+    }
 
     setSubmitting(true);
+
     try {
       const formData = new FormData();
+
       formData.append("name", name);
       formData.append("code", code);
       formData.append("stock", stock.toString());
@@ -114,25 +152,34 @@ export default function EditProductPage() {
       }
 
       await updateProduct(id, formData);
+
+      toast.success("Produk berhasil diperbarui.");
+
       router.push("/admin/inventory/product");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error response:", error.response?.data);
-        alert(error.response?.data?.message || "Gagal memperbarui produk.");
+
+        toast.error(
+          error.response?.data?.message || "Gagal memperbarui produk.",
+        );
       } else {
         console.error(error);
-        alert("Terjadi kesalahan saat memperbarui produk.");
+
+        toast.error("Terjadi kesalahan saat memperbarui produk.");
       }
     } finally {
       setSubmitting(false);
     }
   }
 
+  // LOADING
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50/50 flex items-center justify-center p-8 font-sans antialiased text-slate-950">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-slate-900" />
+
           <p className="text-xs font-medium text-slate-500">
             Memuat data produk...
           </p>
@@ -160,6 +207,7 @@ export default function EditProductPage() {
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">
                 Edit Produk
               </h1>
+
               <p className="text-sm text-slate-500 mt-1">
                 Perbarui rincian dan spesifikasi produk{" "}
                 <span className="font-mono text-slate-700">#{code}</span>
@@ -168,13 +216,14 @@ export default function EditProductPage() {
           </div>
         </div>
 
-        {/* MAIN FORM CARD */}
+        {/* MAIN FORM */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
             {/* INFORMASI PRODUK */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                 <PackageCheck className="w-4 h-4 text-slate-500" />
+
                 <h2 className="text-sm font-semibold text-slate-900">
                   Informasi Produk
                 </h2>
@@ -185,6 +234,7 @@ export default function EditProductPage() {
                 <label className="text-xs font-semibold text-slate-700">
                   Nama Produk <span className="text-rose-500">*</span>
                 </label>
+
                 <input
                   type="text"
                   placeholder="Contoh: Tenda Arpenaz 4.1 Family"
@@ -197,10 +247,12 @@ export default function EditProductPage() {
 
               {/* KODE & KATEGORI */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* KODE */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
                     Kode Produk / SKU <span className="text-rose-500">*</span>
                   </label>
+
                   <input
                     type="text"
                     placeholder="PRD-001"
@@ -211,10 +263,12 @@ export default function EditProductPage() {
                   />
                 </div>
 
+                {/* KATEGORI */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
                     Kategori <span className="text-rose-500">*</span>
                   </label>
+
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
@@ -222,6 +276,7 @@ export default function EditProductPage() {
                     className="w-full h-9 px-3 rounded-md border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent transition-all"
                   >
                     <option value="">Pilih Kategori</option>
+
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}
@@ -233,11 +288,13 @@ export default function EditProductPage() {
 
               {/* HARGA, STOK & STATUS */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* HARGA */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
                     Harga Sewa / Hari (Rp){" "}
                     <span className="text-rose-500">*</span>
                   </label>
+
                   <input
                     type="number"
                     min={0}
@@ -253,10 +310,12 @@ export default function EditProductPage() {
                   />
                 </div>
 
+                {/* STOK */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
                     Stok <span className="text-rose-500">*</span>
                   </label>
+
                   <input
                     type="number"
                     min={0}
@@ -272,16 +331,19 @@ export default function EditProductPage() {
                   />
                 </div>
 
+                {/* STATUS */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700">
                     Status
                   </label>
+
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full h-9 px-3 rounded-md border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent transition-all"
                   >
                     <option value="available">Tersedia</option>
+
                     <option value="unavailable">Habis</option>
                   </select>
                 </div>
@@ -292,6 +354,7 @@ export default function EditProductPage() {
                 <label className="text-xs font-semibold text-slate-700">
                   Deskripsi <span className="text-rose-500">*</span>
                 </label>
+
                 <textarea
                   placeholder="Tuliskan spesifikasi atau deskripsi rinci tentang produk..."
                   value={description}
@@ -311,12 +374,14 @@ export default function EditProductPage() {
 
               {imagePreview || existingImageUrl ? (
                 <div className="space-y-2">
+                  {/* IMAGE PREVIEW */}
                   <div className="relative w-full max-w-xs rounded-lg border border-slate-200 overflow-hidden bg-slate-50 group">
                     <img
-                      src={imagePreview || existingImageUrl!}
+                      src={imagePreview || existingImageUrl || ""}
                       alt="Preview produk"
                       className="w-full h-40 object-cover"
                     />
+
                     {imagePreview && (
                       <button
                         type="button"
@@ -328,9 +393,13 @@ export default function EditProductPage() {
                       </button>
                     )}
                   </div>
+
+                  {/* CHANGE IMAGE */}
                   <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer pt-1">
                     <ImagePlus className="w-3.5 h-3.5" />
+
                     <span>Ganti Foto Produk</span>
+
                     <input
                       type="file"
                       accept="image/*"
@@ -345,13 +414,16 @@ export default function EditProductPage() {
                     <div className="w-9 h-9 mb-2 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                       <ImagePlus className="w-4 h-4" />
                     </div>
+
                     <p className="text-xs font-semibold text-slate-700">
                       Klik untuk unggah gambar baru
                     </p>
+
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       PNG, JPG, atau WEBP (Maks. 2MB)
                     </p>
                   </div>
+
                   <input
                     type="file"
                     accept="image/*"
@@ -372,6 +444,7 @@ export default function EditProductPage() {
             >
               Batal
             </button>
+
             <button
               type="submit"
               disabled={submitting}

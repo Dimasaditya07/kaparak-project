@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -10,6 +11,7 @@ import { getProductDetail } from "@/lib/query/product";
 import { ProductItem } from "@/lib/query/product.model";
 import { addToCart } from "@/lib/query/carts";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -54,30 +56,53 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     const token = localStorage.getItem("token");
+
     if (!token) {
+      toast.warning("Login diperlukan", {
+        description: "Silakan login terlebih dahulu untuk menyewa produk.",
+      });
+
       router.push(`/login?redirect=/product/${product?.id}`);
       return;
     }
+
     if (!product) return;
+
     if (!startDate || !endDate) {
-      alert("Pilih tanggal rental terlebih dahulu");
+      toast.warning("Tanggal rental belum dipilih", {
+        description: "Silakan tentukan tanggal mulai dan selesai rental.",
+      });
       return;
     }
+
     try {
       setAdding(true);
+
       await addToCart({
         product_id: product.id,
         quantity,
         start_date: startDate,
         end_date: endDate,
       });
+
       setAdded(true);
+
+      toast.success("Berhasil ditambahkan", {
+        description: `${product.name} berhasil ditambahkan ke keranjang.`,
+      });
+
       setTimeout(() => {
         router.push("/product");
       }, 800);
     } catch (error) {
       console.error("ADD CART ERROR", error);
+
       setAdding(false);
+
+      toast.error("Gagal menambahkan produk", {
+        description:
+          "Produk tidak dapat ditambahkan ke keranjang. Silakan coba lagi.",
+      });
     }
   };
 
@@ -88,21 +113,83 @@ export default function ProductDetailPage() {
         className="min-h-screen flex flex-col justify-center items-center"
         style={{ background: "#0a0a0a" }}
       >
-        <div
-          className="w-10 h-10 rounded-full mb-5"
-          style={{
-            border: "1.5px solid rgba(255,255,255,0.08)",
-            borderTop: "1.5px solid #4ade80",
-            animation: "spin 0.9s linear infinite",
-          }}
-        />
-        <p
-          className="text-xs font-medium uppercase tracking-[0.3em]"
-          style={{ color: "rgba(255,255,255,0.3)" }}
-        >
-          Memuat Produk
-        </p>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        {/* LOGO + SPINNER */}
+        <div className="relative flex items-center justify-center mb-6">
+          {/* Outer glow */}
+          <div
+            className="absolute w-32 h-32 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%)",
+            }}
+          />
+
+          {/* Spinner */}
+          <div
+            className="absolute w-28 h-28 rounded-full"
+            style={{
+              border: "1.5px solid rgba(255,255,255,0.08)",
+              borderTop: "1.5px solid #4ade80",
+              borderRight: "1.5px solid rgba(74,222,128,0.3)",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+
+          {/* Logo */}
+          <Image
+            src="/images/kaparak3.png"
+            alt="KAPARAK Logo"
+            width={110}
+            height={45}
+            priority
+            className="relative z-10 object-contain brightness-0 invert"
+          />
+        </div>
+
+        {/* Loading Indicator */}
+        <div className="flex items-center gap-1.5 mt-4">
+          <span
+            className="w-1 h-1 rounded-full bg-green-400"
+            style={{
+              animation: "pulse 1.2s ease-in-out infinite",
+            }}
+          />
+
+          <span
+            className="w-1 h-1 rounded-full bg-green-400"
+            style={{
+              animation: "pulse 1.2s ease-in-out 0.2s infinite",
+            }}
+          />
+
+          <span
+            className="w-1 h-1 rounded-full bg-green-400"
+            style={{
+              animation: "pulse 1.2s ease-in-out 0.4s infinite",
+            }}
+          />
+        </div>
+
+        <style jsx>{`
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+
+          @keyframes pulse {
+            0%,
+            100% {
+              opacity: 0.2;
+              transform: translateY(0);
+            }
+
+            50% {
+              opacity: 1;
+              transform: translateY(-2px);
+            }
+          }
+        `}</style>
       </div>
     );
   }

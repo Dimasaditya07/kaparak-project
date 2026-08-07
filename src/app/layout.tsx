@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Cormorant_Garamond, Inter } from "next/font/google";
 import Script from "next/script";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 
@@ -65,6 +66,14 @@ export default function RootLayout({
         `}
       >
         {children}
+
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          expand={false}
+          duration={3000}
+        />
 
         <Script
           src="https://app.sandbox.midtrans.com/snap/snap.js"

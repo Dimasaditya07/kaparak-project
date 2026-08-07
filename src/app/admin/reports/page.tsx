@@ -3,10 +3,17 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Wallet, CalendarRange, Boxes, Users, Eye } from "lucide-react";
+import {
+  Wallet,
+  CalendarRange,
+  Boxes,
+  Users,
+  Eye,
+  CalendarDays,
+} from "lucide-react";
 import { Inter } from "next/font/google";
-import { getReportsSummary } from "@/lib/query/reports";
-import { ReportsSummary } from "@/lib/query/reports.model";
+import { getReportsSummary, getMonthlyReport } from "@/lib/query/reports";
+import { ReportsSummary, MonthlyReportDetail } from "@/lib/query/reports.model";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,10 +46,21 @@ const STATUS_UI: Record<
   },
 };
 
+function getCurrentMonthValue() {
+  const now = new Date();
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  return `${now.getFullYear()}-${month}`;
+}
+
 export default function ReportsPage() {
   const router = useRouter();
   const [data, setData] = useState<ReportsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthValue());
+  const [monthlyReport, setMonthlyReport] =
+    useState<MonthlyReportDetail | null>(null);
+  const [loadingMonthly, setLoadingMonthly] = useState(true);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -58,6 +76,29 @@ export default function ReportsPage() {
 
     fetchSummary();
   }, []);
+
+  useEffect(() => {
+    const fetchMonthly = async () => {
+      const [yearStr, monthStr] = selectedMonth.split("-");
+      const year = Number(yearStr);
+      const month = Number(monthStr);
+
+      if (!year || !month) return;
+
+      setLoadingMonthly(true);
+      try {
+        const res = await getMonthlyReport(year, month);
+        setMonthlyReport(res);
+      } catch (error) {
+        console.error(error);
+        setMonthlyReport(null);
+      } finally {
+        setLoadingMonthly(false);
+      }
+    };
+
+    fetchMonthly();
+  }, [selectedMonth]);
 
   const formatRupiah = (value: number) =>
     `Rp ${Number(value).toLocaleString("id-ID")}`;
@@ -172,7 +213,6 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* CHART DISPLAY */}
             {loading ? (
               <div className="h-65 flex items-end gap-3 pt-6 px-2">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -246,17 +286,54 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {/* LATEST TRANSACTIONS TABLE */}
+        {/* MONTHLY REVENUE PICKER SECTION */}
         <div className="rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm">
-          <div className="p-6 border-b border-slate-100">
-            <h2 className="text-base font-semibold tracking-tight text-slate-900">
-              Latest Transactions
-            </h2>
-            <p className="text-xs text-slate-500">
-              5 reservasi dengan pembayaran lunas terbaru
-            </p>
+          <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-slate-900">
+                Pemasukan per Bulan
+              </h2>
+              <p className="text-xs text-slate-500">
+                Pilih bulan untuk melihat transaksi lunas pada periode itu
+              </p>
+            </div>
+
+            <div className="relative">
+              <CalendarDays className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="h-9 pl-9 pr-3 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-950"
+              />
+            </div>
           </div>
 
+          {/* MONTH TOTAL HIGHLIGHT */}
+          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {loadingMonthly ? (
+              <>
+                <div className="h-8 w-40 bg-slate-200 rounded animate-pulse" />
+                <div className="h-5 w-24 bg-slate-200 rounded animate-pulse" />
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Pemasukan {monthlyReport?.month} {monthlyReport?.year}
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {formatRupiah(monthlyReport?.total_revenue ?? 0)}
+                  </p>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 px-3 py-1 text-xs font-semibold w-fit">
+                  {monthlyReport?.total_transactions ?? 0} transaksi
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* TRANSACTIONS TABLE FOR SELECTED MONTH */}
           <div className="relative w-full overflow-auto">
             <table className="w-full caption-bottom text-sm">
               <thead>
@@ -280,8 +357,8 @@ export default function ReportsPage() {
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
+                {loadingMonthly ? (
+                  Array.from({ length: 3 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
                       <td className="p-4 px-6">
                         <div className="h-4 w-20 bg-slate-100 rounded" />
@@ -300,17 +377,17 @@ export default function ReportsPage() {
                       </td>
                     </tr>
                   ))
-                ) : (data?.latest_transactions ?? []).length === 0 ? (
+                ) : (monthlyReport?.transactions ?? []).length === 0 ? (
                   <tr>
                     <td
                       colSpan={5}
                       className="text-center py-10 text-sm text-slate-400"
                     >
-                      Belum ada transaksi lunas.
+                      Tidak ada transaksi lunas di bulan ini.
                     </td>
                   </tr>
                 ) : (
-                  data!.latest_transactions.map((item, index) => (
+                  monthlyReport!.transactions.map((item, index) => (
                     <motion.tr
                       key={item.id}
                       initial={{ opacity: 0 }}

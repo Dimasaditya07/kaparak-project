@@ -3,15 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  ImagePlus,
-  Loader2,
-  PackagePlus,
-  X,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, ImagePlus, Loader2, X } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 
 import { createProduct } from "@/lib/query/product";
 import { getCategories } from "@/lib/query/category";
@@ -68,6 +62,7 @@ export default function CreateProductPage() {
 
     try {
       const formData = new FormData();
+
       formData.append("name", name);
       formData.append("code", code);
       formData.append("stock", stock.toString());
@@ -81,17 +76,27 @@ export default function CreateProductPage() {
       }
 
       await createProduct(formData);
+
+      toast.success("Produk berhasil ditambahkan.", {
+        description: `"${name}" telah ditambahkan ke inventaris.`,
+      });
+
       router.push("/admin/inventory/product");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error response:", error.response?.data);
-        alert(
-          error.response?.data?.message ||
+
+        toast.error("Gagal menambahkan produk.", {
+          description:
+            error.response?.data?.message ||
             "Terjadi kesalahan saat menyimpan produk.",
-        );
+        });
       } else {
         console.error(error);
-        alert("Gagal menambahkan produk.");
+
+        toast.error("Gagal menambahkan produk.", {
+          description: "Terjadi kesalahan saat menyimpan data produk.",
+        });
       }
     } finally {
       setSubmitting(false);
