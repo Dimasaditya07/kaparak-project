@@ -5,8 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { adminNavItems } from "@/lib/query/navItems";
-import { useRef, useState, useEffect } from "react";
+import { getAdminNotificationCount } from "@/lib/query/adminNotification";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,13 +24,24 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const [notificationCount, setNotificationCount] = useState({
+    reservation: 0,
+    payment: 0,
+    total: 0,
+  });
 
   const toggleMenu = (menuName: string) => {
     setOpenMenu((prev) => (prev === menuName ? null : menuName));
   };
 
+  /**
+   * =========================================================
+   * ACTIVE MENU
+   * =========================================================
+   */
   useEffect(() => {
     const activeMenu = adminNavItems.find((item) => {
       if (!item.subItems) return false;
@@ -43,6 +56,59 @@ export default function Sidebar() {
     }
   }, [pathname]);
 
+  /**
+   * =========================================================
+   * ADMIN NOTIFICATION
+   * =========================================================
+   */
+  const fetchNotificationCount = async () => {
+    try {
+      const data = await getAdminNotificationCount();
+
+      setNotificationCount(data);
+    } catch (error) {
+      console.error("Gagal mengambil jumlah notifikasi admin:", error);
+    }
+  };
+
+  /**
+   * Ambil notifikasi saat Sidebar pertama kali dibuka
+   * dan refresh setiap 10 detik.
+   */
+  useEffect(() => {
+    // Ambil pertama kali
+    fetchNotificationCount();
+
+    // Refresh otomatis setiap 10 detik
+    const interval = setInterval(() => {
+      fetchNotificationCount();
+    }, 5000);
+
+    // Dengarkan perubahan notifikasi dari halaman lain
+    const handleNotificationUpdate = () => {
+      fetchNotificationCount();
+    };
+
+    window.addEventListener(
+      "admin-notifications-updated",
+      handleNotificationUpdate,
+    );
+
+    return () => {
+      clearInterval(interval);
+
+      window.removeEventListener(
+        "admin-notifications-updated",
+        handleNotificationUpdate,
+      );
+    };
+  }, []);
+
+  /**
+   * =========================================================
+   * LOGOUT
+   * =========================================================
+   */
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("name");
@@ -52,15 +118,12 @@ export default function Sidebar() {
   };
 
   return (
-    <aside
-      ref={sidebarRef}
-      className="sticky top-0 w-72 h-screen bg-[#050505] border-r border-[#050505] p-5 flex flex-col shrink-0"
-    >
-      {/* LOGO */}
-      <div className="pt-10 pb-12 flex justify-center">
-        <Link href="/" className="group relative">
-          <div className="absolute inset-0 bg-green-500/20 blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-full" />
-
+    <aside className="flex h-screen w-64 flex-col bg-[#050505]">
+      {/* =====================================================
+          LOGO
+      ===================================================== */}
+      <div className="flex h-20 items-center justify-center">
+        <Link href="/admin/dashboard">
           <Image
             src="/images/kaparak3.png"
             alt="KAPARAK Logo"
@@ -71,8 +134,10 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* NAVIGATION */}
-      <nav className="bg-[#050505] px-3 py-4 flex flex-col justify-between shadow-[0_0_40px_rgba(0,0,0,0.45)] flex-1 overflow-y-auto">
+      {/* =====================================================
+          NAVIGATION
+      ===================================================== */}
+      <nav className="flex flex-1 flex-col justify-between overflow-y-auto bg-[#050505] px-3 py-4 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
         {/* MENU */}
         <div className="flex flex-col gap-1">
           {adminNavItems.map((item) => {
@@ -86,23 +151,26 @@ export default function Sidebar() {
 
             return (
               <div key={item.name}>
+                {/* =================================================
+                    MENU UTAMA
+                ================================================= */}
                 {hasSubItems ? (
                   <button
                     onClick={() => toggleMenu(item.name)}
-                    className={`w-full flex items-center justify-between px-5 py-3 rounded-2xl transition-all duration-300 ${
+                    className={`flex w-full items-center justify-between rounded-2xl px-5 py-3 transition-all duration-300 ${
                       isActive || isOpen
                         ? "bg-green-500/10 text-green-400"
-                        : "text-gray-400 hover:bg-white/ hover:text-green-400"
+                        : "text-gray-400 hover:bg-green-500/10 hover:text-green-400"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <item.Icon className="w-5 h-5" />
+                      <item.Icon className="h-5 w-5" />
 
                       <span className="text-sm font-medium">{item.name}</span>
                     </div>
 
                     <svg
-                      className={`w-4 h-4 transition-transform duration-300 ${
+                      className={`h-4 w-4 transition-transform duration-300 ${
                         isOpen ? "rotate-180" : ""
                       }`}
                       fill="none"
@@ -120,43 +188,82 @@ export default function Sidebar() {
                 ) : (
                   <Link
                     href={item.href || "#"}
-                    className={`flex items-center gap-3 px-5 py-3 rounded-2xl transition-all duration-300 ${
+                    className={`flex items-center gap-3 rounded-2xl px-5 py-3 transition-all duration-300 ${
                       isActive
                         ? "bg-green-500/10 text-green-400"
-                        : "text-gray-400 hover:bg-green-500/10  hover:text-green-400"
+                        : "text-gray-400 hover:bg-green-500/10 hover:text-green-400"
                     }`}
                   >
-                    <item.Icon className="w-5 h-5" />
+                    <item.Icon className="h-5 w-5" />
 
                     <span className="text-sm font-medium">{item.name}</span>
                   </Link>
                 )}
 
-                {/* SUBMENU */}
+                {/* =================================================
+                    SUBMENU
+                ================================================= */}
                 <AnimatePresence>
                   {hasSubItems && isOpen && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.25 }}
+                      initial={{
+                        opacity: 0,
+                        height: 0,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        height: "auto",
+                      }}
+                      exit={{
+                        opacity: 0,
+                        height: 0,
+                      }}
+                      transition={{
+                        duration: 0.25,
+                      }}
                       className="overflow-hidden"
                     >
                       <div className="mt-1 ml-6 flex flex-col gap-1 border-l border-white/10 pl-4">
                         {item.subItems!.map((sub) => {
                           const isSubActive = pathname === sub.href;
 
+                          /**
+                           * Deteksi jenis notifikasi berdasarkan URL.
+                           */
+                          const isReservation =
+                            sub.href?.includes("/reservation") ||
+                            sub.href?.includes("/reservations");
+
+                          const isPayment =
+                            sub.href?.includes("/payment") ||
+                            sub.href?.includes("/payments");
+
+                          /**
+                           * Tentukan jumlah badge.
+                           */
+                          const badgeCount = isReservation
+                            ? notificationCount.reservation
+                            : isPayment
+                              ? notificationCount.payment
+                              : 0;
+
                           return (
                             <Link
                               key={sub.name}
                               href={sub.href || "#"}
-                              className={`py-2 text-sm transition-all duration-200 ${
+                              className={`flex items-center justify-between py-2 text-sm transition-all duration-200 ${
                                 isSubActive
                                   ? "text-green-400"
                                   : "text-gray-500 hover:text-green-400"
                               }`}
                             >
-                              {sub.name}
+                              <span>{sub.name}</span>
+
+                              {badgeCount > 0 && (
+                                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
+                                  {badgeCount > 99 ? "99+" : badgeCount}
+                                </span>
+                              )}
                             </Link>
                           );
                         })}
@@ -169,18 +276,20 @@ export default function Sidebar() {
           })}
         </div>
 
-        {/* LOGOUT */}
-        <div className="pt-4 mt-4 border-t border-white/5">
+        {/* =====================================================
+            LOGOUT
+        ===================================================== */}
+        <div className="mt-4 border-t border-white/5 pt-4">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300">
+              <button className="flex w-full items-center gap-3 rounded-2xl px-5 py-3 text-gray-400 transition-all duration-300 hover:bg-red-500/10 hover:text-red-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={2}
                   stroke="currentColor"
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                 >
                   <path
                     strokeLinecap="round"

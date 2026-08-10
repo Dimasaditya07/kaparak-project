@@ -130,24 +130,31 @@ export default function CheckoutPage() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          className="mb-8"
         >
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.4em]"
-            style={{ color: "#4ade80" }}
-          >
-            Checkout
-          </p>
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className="w-1.5 h-6 rounded-full"
+              style={{
+                background: "linear-gradient(180deg, #4ade80 0%, #16a34a 100%)",
+              }}
+            />
+            <p
+              className="text-[10px] font-bold uppercase tracking-[0.4em]"
+              style={{ color: "#4ade80" }}
+            >
+              Checkout
+            </p>
+          </div>
 
           <h1
-            className="font-black uppercase italic"
-            style={{ fontSize: "clamp(3rem, 6vw, 5rem)" }}
+            className="font-black uppercase italic leading-[0.9] mb-2"
+            style={{ fontSize: "clamp(2rem, 4.5vw, 3rem)" }}
           >
-            Konfirmasi
-            <br />
+            Konfirmasi{" "}
             <span
               style={{
-                WebkitTextStroke: "1px rgba(255,255,255,0.2)",
+                WebkitTextStroke: "1.5px rgba(255,255,255,0.25)",
                 color: "transparent",
               }}
             >
@@ -155,7 +162,7 @@ export default function CheckoutPage() {
             </span>
           </h1>
 
-          <p style={{ color: "rgba(255,255,255,0.35)" }}>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
             Review items sebelum pembayaran
           </p>
         </motion.div>

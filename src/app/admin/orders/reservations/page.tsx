@@ -15,6 +15,7 @@ import {
 
 import { getReservations } from "@/lib/query/reservations";
 import { Reservation } from "@/lib/query/reservations.model";
+import { markAdminNotificationsAsReadByType } from "@/lib/query/adminNotification";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Menunggu",
@@ -54,6 +55,18 @@ export default function ReservationAdminPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, filterStatus]);
+
+  useEffect(() => {
+    const markAsRead = async () => {
+      try {
+        await markAdminNotificationsAsReadByType("reservation");
+      } catch (error) {
+        console.error("Gagal menandai notifikasi reservasi:", error);
+      }
+    };
+
+    markAsRead();
+  }, []);
 
   // FILTER + SEARCH
   const filteredReservations = useMemo(() => {
