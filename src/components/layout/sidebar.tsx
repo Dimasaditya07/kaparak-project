@@ -118,11 +118,9 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-64 flex-col bg-[#050505]">
-      {/* =====================================================
-          LOGO
-      ===================================================== */}
-      <div className="flex h-20 items-center justify-center">
+    <aside className="sticky top-0 flex h-screen w-64 flex-col bg-[#050505]">
+    
+      <div className="flex items-center justify-center pt-16 pb-6">
         <Link href="/admin/dashboard">
           <Image
             src="/images/kaparak3.png"
@@ -294,6 +292,7 @@ export default function Sidebar() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    strokeWidth="2"
                     d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
                   />
                 </svg>

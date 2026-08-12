@@ -131,7 +131,7 @@ export default function ContactPage() {
                     <p className="font-sans text-base text-white font-medium leading-relaxed">
                       +62 812 3456 7890 (WhatsApp)
                       <br />
-                      hello@kaparak.com
+                      kaparak@gmail.com
                     </p>
                   </div>
                 </motion.div>

@@ -6,29 +6,19 @@ import Image from "next/image";
 const galleryImages = [
   {
     src: "/images/kaparakone.jpg",
-    title: "Mount Gede",
-    user: "@petualang_sejati",
   },
   {
     src: "/images/kaparaktwo.jpg",
-    title: "Suryakencana",
-    user: "@anak_gunung",
   },
   {
     src: "/images/kaparakthre.jpg",
-    title: "Camping Ground",
-    user: "@kaparak_user",
   },
   {
     src: "/images/kaparakone.jpg",
-    title: "Merbabu Peak",
-    user: "@explorer_indo",
   },
-  { src: "/images/kaparaktwo.jpg", title: "Lake View", user: "@nature_lover" },
+  { src: "/images/kaparaktwo.jpg" },
   {
     src: "/images/kaparakthre.jpg",
-    title: "Forest Camp",
-    user: "@mibers_family",
   },
 ];
 
@@ -84,20 +74,16 @@ export default function Galery() {
               >
                 <Image
                   src={item.src}
-                  alt={item.title}
                   width={400}
                   height={500}
                   className="w-full h-87.5 md:h-112.5 object-cover grayscale-50 group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                  alt={""}
                 />
 
                 {/* OVERLAY ON HOVER */}
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
-                  <p className="font-mono text-[9px] text-green-500 uppercase tracking-widest mb-1">
-                    {item.user}
-                  </p>
-                  <h3 className="font-sans text-sm font-bold uppercase tracking-widest text-white">
-                    {item.title}
-                  </h3>
+                  <p className="font-mono text-[9px] text-green-500 uppercase tracking-widest mb-1"></p>
+                  <h3 className="font-sans text-sm font-bold uppercase tracking-widest text-white"></h3>
                   <div className="w-0 group-hover:w-full h-px bg-green-600 mt-2 transition-all duration-500"></div>
                 </div>
               </div>

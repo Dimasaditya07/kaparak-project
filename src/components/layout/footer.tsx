@@ -62,9 +62,9 @@ export default function Footer() {
             <h4 className="font-sans text-[10px] uppercase tracking-[0.4em] text-green-500 mb-8">
               Get in Touch
             </h4>
-            <ul className="flex flex-col gap-4 font-sans text-[11px] uppercase tracking-widest text-gray-400">
+            <ul className="flex flex-col gap-4 font-sans text-[11px] tracking-widest text-gray-400">
               <li>WhatsApp: +62 812-3456-7890</li>
-              <li>Email: hello@kaparak.com</li>
+              <li>Email: kaparak@gmail.com</li>
               <li>Instagram: @kaparak.outdoor</li>
               <li className="normal-case leading-relaxed">
                 Jl. Raya Outdoor No. 123, Tangerang, Banten

@@ -49,7 +49,7 @@ export default function LoginPage() {
       // Beri sedikit waktu agar toast terlihat
       setTimeout(() => {
         if (role === "admin") {
-          router.push("/admin");
+          router.push("/admin/dashboard");
         } else {
           router.push("/");
         }
