@@ -93,9 +93,14 @@ export default function Galery() {
 
         {/* BOTTOM CALL TO ACTION */}
         <div className="mt-16 text-center max-w-7xl mx-auto px-10 md:px-0">
-          <button className="font-mono text-[10px] uppercase tracking-[0.3em] text-black-300 hover:text-white transition-colors border-b border-gray-700 pb-2">
+          <a
+            href="https://instagram.com/kaparak.outdoorpadang"
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-[10px] uppercase tracking-[0.3em] text-black-300 hover:text-white transition-colors border-b border-gray-700 pb-2 inline-block"
+          >
             Lihat Lebih Banyak di Instagram →
-          </button>
+          </a>
         </div>
       </div>
     </section>
