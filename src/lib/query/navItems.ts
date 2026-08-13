@@ -45,7 +45,7 @@ export const adminNavItems: AdminNavItem[] = [
     ]
   },
   {
-    name: "Akun Customer",
+    name: "Akun Pengguna",
     href: "/admin/users",
     Icon: UserIcon,
   },
