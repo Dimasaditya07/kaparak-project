@@ -464,33 +464,10 @@ export default function VerifyEmailSuccessPage() {
                       />
                     </svg>
 
-                    <span className="relative">Masuk Sekarang</span>
+                    <span className="relative">Login Sekarang</span>
                   </Link>
 
                   {/* TOMBOL SEKUNDER */}
-                  <Link
-                    href="/"
-                    className="flex items-center justify-center gap-2 w-full h-12 rounded-xl text-xs font-medium uppercase tracking-[0.2em] transition-all duration-200"
-                    style={{
-                      background: "transparent",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.35)",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor =
-                        "rgba(255,255,255,0.18)";
-
-                      e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor =
-                        "rgba(255,255,255,0.08)";
-
-                      e.currentTarget.style.color = "rgba(255,255,255,0.35)";
-                    }}
-                  >
-                    Kembali ke Beranda
-                  </Link>
                 </motion.div>
               </div>
             </div>
