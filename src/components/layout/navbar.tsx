@@ -20,6 +20,7 @@ export default function Navbar() {
   const [userName, setUserName] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +81,10 @@ export default function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    setShowMobileMenu(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("name");
@@ -102,15 +107,14 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 px-10 md:px-20 transition-all duration-700 font-sans
-        ${
-          scrolled || !isHome
-            ? "bg-black/60 backdrop-blur-md py-5 border-b border-white/5"
-            : "bg-transparent py-5 border-b border-white/5"
-        }`}
+      className={`fixed top-0 left-0 w-full z-50 px-5 md:px-20 transition-all duration-700 font-sans ${
+        scrolled || !isHome
+          ? "bg-black/60 backdrop-blur-md py-4 md:py-5 border-b border-white/5"
+          : "bg-transparent py-4 md:py-5 border-b border-white/5"
+      }`}
     >
       <div className="relative flex items-center justify-between">
-        {/* LEFT - LOGO */}
+        {/* ==================== LOGO ==================== */}
         <Link
           href="/"
           className="relative z-10 transition-transform hover:scale-105"
@@ -120,18 +124,18 @@ export default function Navbar() {
             alt="KAPARAK Logo"
             width={110}
             height={35}
-            className="object-contain"
+            className="object-contain w-[90px] md:w-[110px]"
           />
         </Link>
 
-        {/* CENTER - FIXED MENU */}
+        {/* ==================== DESKTOP MENU ==================== */}
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex gap-10 text-[11px] uppercase tracking-widest font-semibold text-white/70">
           <Link
             href="/"
             className="hover:text-white transition-colors relative group"
           >
             Home
-            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full" />
           </Link>
 
           <Link
@@ -139,7 +143,7 @@ export default function Navbar() {
             className="hover:text-white transition-colors relative group"
           >
             Katalog
-            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full" />
           </Link>
 
           <Link
@@ -147,7 +151,7 @@ export default function Navbar() {
             className="hover:text-white transition-colors relative group"
           >
             Cara Sewa
-            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full" />
           </Link>
 
           <Link
@@ -155,16 +159,16 @@ export default function Navbar() {
             className="hover:text-white transition-colors relative group"
           >
             Kontak
-            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-green-600 transition-all duration-300 group-hover:w-full" />
           </Link>
         </div>
 
-        {/* RIGHT - LOGIN / USER */}
-        <div className="ml-auto flex items-center gap-6">
+        {/* ==================== DESKTOP RIGHT ==================== */}
+        <div className="ml-auto hidden md:flex items-center gap-6">
           {isLoggedIn ? (
             <div className="flex items-center gap-6 animate-in fade-in duration-500">
-              {/* USER INFO */}
               <div className="flex items-center gap-4">
+                {/* USER INFO */}
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
@@ -204,6 +208,7 @@ export default function Navbar() {
                   )}
                 </div>
 
+                {/* CART */}
                 <Link href="/cart" className="relative group">
                   <div className="p-2 relative flex items-center justify-center transition-transform group-hover:scale-110">
                     <CartIcon className="w-5 h-5 text-white/70 group-hover:text-green-500 transition-colors duration-300" />
@@ -216,6 +221,7 @@ export default function Navbar() {
                   </div>
                 </Link>
 
+                {/* LOGOUT */}
                 <button
                   onClick={() => setShowLogoutDialog(true)}
                   className="font-mono text-[10px] uppercase tracking-widest font-bold text-gray-500 hover:text-red-500 transition-colors relative group"
@@ -228,22 +234,176 @@ export default function Navbar() {
           ) : (
             <Link href="/login" className="block">
               <button className="group relative flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.2em] font-bold text-white px-7 py-3 overflow-hidden transition-all duration-500">
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-sm border border-white/10 group-hover:border-green-500/50 transition-colors duration-500"></div>
+                <div className="absolute inset-0 bg-white/5 backdrop-blur-sm border border-white/10 group-hover:border-green-500/50 transition-colors duration-500" />
 
-                <div className="absolute inset-0 bg-green-600/0 group-hover:bg-green-600/10 transition-colors duration-500"></div>
+                <div className="absolute inset-0 bg-green-600/0 group-hover:bg-green-600/10 transition-colors duration-500" />
 
                 <div className="relative flex items-center gap-2.5">
                   <UserIcon className="w-3.5 h-3.5 text-white transition-transform duration-500 group-hover:scale-110" />
+
                   <span className="relative">
                     Login
-                    <span className="absolute -bottom-1 left-0 w-0 h-px bg-green-500 transition-all duration-500 group-hover:w-full"></span>
+                    <span className="absolute -bottom-1 left-0 w-0 h-px bg-green-500 transition-all duration-500 group-hover:w-full" />
                   </span>
                 </div>
               </button>
             </Link>
           )}
         </div>
+
+        {/* ==================== MOBILE RIGHT ==================== */}
+        <div className="ml-auto flex md:hidden items-center gap-3">
+          {/* CART MOBILE */}
+          {isLoggedIn && (
+            <Link href="/cart" className="relative group">
+              <div className="p-2 flex items-center justify-center">
+                <CartIcon className="w-5 h-5 text-white/80" />
+
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-green-600 text-white text-[8px] font-bold flex items-center justify-center rounded-full border border-black">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+            </Link>
+          )}
+
+          {/* HAMBURGER */}
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 text-white"
+            aria-label="Toggle menu"
+          >
+            <span
+              className={`block w-6 h-[1.5px] bg-white transition-all duration-300 ${
+                showMobileMenu ? "rotate-45 translate-y-[4px]" : ""
+              }`}
+            />
+
+            <span
+              className={`block w-6 h-[1.5px] bg-white transition-all duration-300 ${
+                showMobileMenu ? "opacity-0" : ""
+              }`}
+            />
+
+            <span
+              className={`block w-6 h-[1.5px] bg-white transition-all duration-300 ${
+                showMobileMenu ? "-rotate-45 -translate-y-[4px]" : ""
+              }`}
+            />
+          </button>
+        </div>
       </div>
+
+      {/* ==================== MOBILE MENU ==================== */}
+      <div
+        className={`md:hidden absolute left-0 top-full w-full bg-black/95 backdrop-blur-xl border-t border-white/10 transition-all duration-300 overflow-hidden ${
+          showMobileMenu
+            ? "max-h-[600px] opacity-100 visible"
+            : "max-h-0 opacity-0 invisible"
+        }`}
+      >
+        <div className="px-5 py-6 space-y-2">
+          {/* MENU NAVIGATION */}
+          <Link
+            href="/"
+            onClick={() => setShowMobileMenu(false)}
+            className="flex items-center justify-between px-4 py-4 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition"
+          >
+            <span className="font-mono text-xs uppercase tracking-[0.2em]">
+              Home
+            </span>
+
+            <span className="text-green-500">01</span>
+          </Link>
+
+          <Link
+            href="/product"
+            onClick={() => setShowMobileMenu(false)}
+            className="flex items-center justify-between px-4 py-4 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition"
+          >
+            <span className="font-mono text-xs uppercase tracking-[0.2em]">
+              Katalog
+            </span>
+
+            <span className="text-green-500">02</span>
+          </Link>
+
+          <Link
+            href="/how-to-rent"
+            onClick={() => setShowMobileMenu(false)}
+            className="flex items-center justify-between px-4 py-4 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition"
+          >
+            <span className="font-mono text-xs uppercase tracking-[0.2em]">
+              Cara Sewa
+            </span>
+
+            <span className="text-green-500">03</span>
+          </Link>
+
+          <Link
+            href="/contact"
+            onClick={() => setShowMobileMenu(false)}
+            className="flex items-center justify-between px-4 py-4 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition"
+          >
+            <span className="font-mono text-xs uppercase tracking-[0.2em]">
+              Kontak
+            </span>
+
+            <span className="text-green-500">04</span>
+          </Link>
+
+          {/* DIVIDER */}
+          <div className="my-4 border-t border-white/10" />
+
+          {/* USER SECTION */}
+          {isLoggedIn ? (
+            <div className="space-y-2">
+              {/* USER NAME */}
+              <div className="px-4 py-3">
+                <p className="text-[9px] uppercase tracking-[0.25em] text-gray-500 mb-1">
+                  Login sebagai
+                </p>
+
+                <p className="font-mono text-sm font-bold text-white uppercase tracking-wider truncate">
+                  {userName}
+                </p>
+              </div>
+
+              {/* ORDER HISTORY */}
+              <Link
+                href="/order-history"
+                onClick={() => setShowMobileMenu(false)}
+                className="block px-4 py-4 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition font-mono text-xs uppercase tracking-[0.2em]"
+              >
+                Riwayat Pesanan
+              </Link>
+
+              {/* LOGOUT */}
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setShowLogoutDialog(true);
+                }}
+                className="w-full text-left px-4 py-4 text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded-lg transition font-mono text-xs uppercase tracking-[0.2em]"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setShowMobileMenu(false)}
+              className="flex items-center justify-center gap-3 w-full px-4 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-mono text-xs uppercase tracking-[0.2em] font-bold"
+            >
+              <UserIcon className="w-4 h-4" />
+              Login
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* LOGOUT DIALOG */}
       <KaparakAlertDialog
         open={showLogoutDialog}
         onOpenChange={setShowLogoutDialog}
