@@ -67,7 +67,7 @@ export default function Footer() {
               <li>Email: kaparak@gmail.com</li>
               <li>Instagram: @kaparak.outdoor</li>
               <li className="normal-case leading-relaxed">
-                Jl. Raya Outdoor No. 123, Tangerang, Banten
+                Kaparak Outdoor Padang Padang, Sumatera Barat
               </li>
             </ul>
           </div>
@@ -84,6 +84,9 @@ export default function Footer() {
             </Link>
             <Link href="#" className="hover:text-gray-300">
               Terms of Service
+            </Link>
+            <Link href="#" className="hover:text-gray-300">
+              Dimas Aditya Ramadhan
             </Link>
           </div>
         </div>
