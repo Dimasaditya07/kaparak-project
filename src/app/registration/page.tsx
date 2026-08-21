@@ -10,6 +10,7 @@ import axios from "@/lib/api/axios";
 import { AxiosError } from "axios";
 import { UserIcon } from "@/components/icons/UserIcon";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const itemVariants = {
@@ -28,13 +29,15 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const toastId = toast.loading("Mendaftarkan akun...");
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validasi sederhana di frontend
     if (password !== passwordConfirmation) {
-      alert("Password dan konfirmasi password tidak cocok!");
+      toast.error("Password tidak cocok", {
+        description: "Password dan konfirmasi password harus sama.",
+      });
       return;
     }
 
@@ -57,7 +60,10 @@ export default function RegisterPage() {
       localStorage.setItem("role", role);
       localStorage.setItem("name", userName);
 
-      alert("Registrasi berhasil! Selamat datang di KAPARAK.");
+      toast.success("Registrasi berhasil!", {
+        id: toastId,
+        description: "Silahkan verifikasi email anda untuk melanjutkan.",
+      });
 
       // Arahkan ke halaman verifikasi email
       router.push(`/verify-email?email=${encodeURIComponent(email)}`);
@@ -69,9 +75,12 @@ export default function RegisterPage() {
 
       console.error("Register Error:", error);
 
-      alert(
-        error.response?.data?.message || "Registrasi gagal, silakan coba lagi.",
-      );
+      toast.error("Registrasi gagal", {
+        id: toastId,
+        description:
+          error.response?.data?.message ||
+          "Silakan periksa kembali data yang kamu masukkan.",
+      });
     } finally {
       setLoading(false);
     }
