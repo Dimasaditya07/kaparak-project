@@ -29,7 +29,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
-  const toastId = toast.loading("Mendaftarkan akun...");
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -61,7 +61,6 @@ export default function RegisterPage() {
       localStorage.setItem("name", userName);
 
       toast.success("Registrasi berhasil!", {
-        id: toastId,
         description: "Silahkan verifikasi email anda untuk melanjutkan.",
       });
 
@@ -76,7 +75,6 @@ export default function RegisterPage() {
       console.error("Register Error:", error);
 
       toast.error("Registrasi gagal", {
-        id: toastId,
         description:
           error.response?.data?.message ||
           "Silakan periksa kembali data yang kamu masukkan.",
