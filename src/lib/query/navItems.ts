@@ -50,7 +50,7 @@ export const adminNavItems: AdminNavItem[] = [
     Icon: UserIcon,
   },
   {
-    name: "Laporan",
+    name: "Laporan Penjualan",
     href: "/admin/reports",
     Icon: ReportsIcon,
   },
