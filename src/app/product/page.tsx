@@ -189,8 +189,8 @@ export default function Product() {
   // =========================
   // DETAIL URL
   // =========================
-  const detailHref = (id: string | number) =>
-    activeTab === "product" ? `/product/${id}` : `/package/${id}`;
+  const detailHref = (slug: string | number) =>
+    activeTab === "product" ? `/product/${slug}` : `/package/${slug}`;
 
   return (
     <main
@@ -777,7 +777,7 @@ export default function Product() {
             <AnimatePresence mode="popLayout">
               {filtered.map((item: any) => (
                 <motion.div key={`${activeTab}-${item.id}`} layout exit="exit">
-                  <Link href={detailHref(item.id)}>
+                  <Link href={detailHref(item.slug)}>
                     <motion.div
                       whileHover={{
                         y: -5,

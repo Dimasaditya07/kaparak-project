@@ -55,6 +55,6 @@ export async function deleteProduct(
   return response.data;
 }
 
-export const getProductDetail = (id: string) => {
-  return axiosInstance.get(`/products/${id}`);
+export const getProductDetail = (slug: string) => {
+  return axiosInstance.get(`/products/${slug}`);
 };

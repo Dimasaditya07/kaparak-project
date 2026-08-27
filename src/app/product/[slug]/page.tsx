@@ -27,7 +27,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await getProductDetail(params.id as string);
+        const response = await getProductDetail(params.slug as string);
         setProduct(response.data.data);
       } catch (error) {
         console.error(error);
@@ -35,8 +35,8 @@ export default function ProductDetailPage() {
         setLoading(false);
       }
     };
-    if (params.id) fetchProduct();
-  }, [params.id]);
+    if (params.slug) fetchProduct();
+  }, [params.slug]);
 
   const duration = useMemo(() => {
     if (!startDate || !endDate) return 0;
